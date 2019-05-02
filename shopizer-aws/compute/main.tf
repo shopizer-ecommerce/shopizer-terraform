@@ -3,11 +3,11 @@
 data "aws_ami" "server_ami" {
   most_recent = true
 
-  owners = ["amazon"]
+  owners = ["099720109477"]
 
   filter {
     name   = "name"
-    values = ["amzn-ami-hvm*-x86_64-gp2"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20190212.1"]
   }
 }
 

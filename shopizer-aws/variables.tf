@@ -16,6 +16,10 @@ variable "public_cidrs" {
 
 variable "accessip" {}
 
+variable "subnet_count" {
+  default = 2
+}
+
 #-------compute variables
 
 variable "key_name" {}

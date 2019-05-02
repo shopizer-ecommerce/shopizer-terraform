@@ -13,6 +13,7 @@ module "storage" {
 # Deploy Networking Resources
 module "networking" {
   source       = "./networking"
+  subnet_count  = "${var.subnet_count}"
   vpc_cidr     = "${var.vpc_cidr}"
   public_cidrs = "${var.public_cidrs}"
   accessip     = "${var.accessip}"

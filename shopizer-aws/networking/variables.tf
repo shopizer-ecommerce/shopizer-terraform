@@ -7,3 +7,5 @@ variable "public_cidrs" {
 }
 
 variable "accessip" {}
+
+variable "subnet_count" {}
