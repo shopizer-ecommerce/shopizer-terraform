@@ -16,18 +16,38 @@ resource "aws_lightsail_instance" "shopizer" {
 
 #!/bin/bash
 echo "Install docker + Docker compose"
-sudo apt update -y
-curl -fsSL https://get.docker.com -o get-docker.sh | sudo sh get-docker.sh
+
+#increase MemorySize
+sudo /bin/su -c "echo 'vm.max_map_count=262144' >> /etc/sysctl.conf"
+sudo sysctl -p
+
+# Install docker
+apt-get update
+apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+apt-get update
+apt-get install -y docker-ce
 usermod -aG docker ubuntu
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+# Install docker-compose
+curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
-docker-compose --version
+
 mkdir /srv/docker
 sudo curl -o /srv/docker/docker-compose.yml https://raw.githubusercontent.com/shopizer-ecommerce/shopizer-docker-compose/master/docker-compose-os-aws.yml
 
 echo "Install nginx"
 sudo apt install nginx -y
 sudo unlink /etc/nginx/sites-enabled/default
+sudo snap install core
+sudo snap refresh core
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+
 #cd /etc/nginx/sites-available
 echo "Installation completed"
                         EOF
