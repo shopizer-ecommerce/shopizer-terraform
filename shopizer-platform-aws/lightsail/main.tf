@@ -202,7 +202,7 @@ locals {
     ssl_support_method             = null
   }
 
-  # enable when cert is in cetr manager
+  # enable when cert is in cert manager
   acm_viewer_certificate = {
     acm_certificate_arn            = try(var.acm_certificate.arn, null)
     cloudfront_default_certificate = false
