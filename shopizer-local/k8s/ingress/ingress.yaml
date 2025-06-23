@@ -1,0 +1,40 @@
+# ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: terraform-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pgadmin
+                port:
+                  number: 80
+          - path: /merchant
+            pathType: Prefix
+            backend:
+              service:
+                name: merchant
+                port:
+                  number: 80
+          - path: /references
+            pathType: Prefix
+            backend:
+              service:
+                name: references
+                port:
+                  number: 80
+          - path: /keycloak
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80

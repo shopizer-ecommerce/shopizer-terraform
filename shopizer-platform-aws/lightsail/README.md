@@ -9,7 +9,7 @@ AWS Serverless image handler is also installed for image optimization from Cloud
 
 ## Lightsail
 
-4GB of RAM 2vcpu Ubunto 20.X
+4GB of RAM 2vcpu Ubuntu 20.X
 This will run Nginx, Docker and Docker compse
 
 ## S3 Bucket

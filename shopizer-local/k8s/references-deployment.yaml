@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: references
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: references
+  template:
+    metadata:
+      labels:
+        app: references
+    spec:
+      containers:
+        - name: references
+          image: localhost:5001/shopizer-references:latest
+          ports:
+            - containerPort: 8080

@@ -1,0 +1,13 @@
+# keycloak-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+spec:
+  selector:
+    app: keycloak
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: NodePort  # Or use LoadBalancer/Ingress if needed
