@@ -38,3 +38,25 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: APPLICATION_DB_PASSWORD
+            - name: APPLICATION_ISSUER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_ISSUER_URL
+            - name: APPLICATION_SERVICE_ISSUER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_SERVICE_ISSUER_URL
+            - name: APPLICATION_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CLIENT_ID
+            - name: APPLICATION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CLIENT_SECRET
+            - name: MERCHANT_URL
+              value: merchant
