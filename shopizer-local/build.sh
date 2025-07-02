@@ -39,7 +39,6 @@ for service in "${SERVICES[@]}"; do
 
   echo "📁 Entering $SERVICE_DIR"
   cd "$SERVICE_DIR"
-  #POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
   POM_VERSION=latest
 
   echo "📁 version $POM_VERSION"

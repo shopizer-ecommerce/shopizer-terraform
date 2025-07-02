@@ -130,6 +130,32 @@ resource "null_resource" "deploy_keycloak" {
   }
 }
 
+resource "null_resource" "deploy_ingress_nginx" {
+  # Trigger only after cluster is created
+  depends_on = [null_resource.deploy_postgres]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml"
+  }
+}
+
+resource "null_resource" "verify_ingress_nginx" {
+  # Trigger only after cluster is created
+  depends_on = [null_resource.deploy_ingress_nginx]
+
+  provisioner "local-exec" {
+    command = "kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s"
+  }
+}
+
+resource "null_resource" "deploy_ingress" {
+  depends_on = [null_resource.verify_ingress_nginx]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f ./k8s/ingress"
+  }
+}
+
 
 resource "null_resource" "delete_kind_cluster" {
   triggers = {

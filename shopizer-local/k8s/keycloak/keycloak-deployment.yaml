@@ -55,3 +55,11 @@ spec:
                 secretKeyRef:
                   name: keycloak-secret
                   key: KEYCLOAK_ADMIN_PASSWORD
+            - name: KC_HTTP_RELATIVE_PATH
+              value: /keycloak
+            - name: KC_PROXY
+              value: edge
+            - name: KC_HOSTNAME
+              value: keycloak
+            - name: KC_HOSTNAME_PATH
+              value: /keycloak
