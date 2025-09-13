@@ -26,7 +26,7 @@ spec:
 #              cpu: "500m"
           env:
             - name: JAVA_TOOL_OPTIONS
-              value: "-Xmx500m -XX:MaxMetaspaceSize=80m -XX:ReservedCodeCacheSize=32m"
+              value: "-Xmx500m -XX:MaxMetaspaceSize=256m -XX:ReservedCodeCacheSize=32m"
             - name: APPLICATION_DB_HOST
               valueFrom:
                 secretKeyRef:
@@ -67,3 +67,8 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: APPLICATION_CLIENT_SECRET
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: OPENAI_API_KEY

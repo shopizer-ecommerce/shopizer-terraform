@@ -130,6 +130,13 @@ resource "null_resource" "deploy_keycloak" {
   }
 }
 
+resource "null_resource" "redis" {
+  depends_on = [null_resource.deploy_postgres]
+  provisioner "local-exec" {
+    command = "kubectl apply -f ./k8s/redis"
+  }
+}
+
 resource "null_resource" "deploy_ingress_nginx" {
   # Trigger only after cluster is created
   depends_on = [null_resource.deploy_postgres]
@@ -148,11 +155,12 @@ resource "null_resource" "verify_ingress_nginx" {
   }
 }
 
-resource "null_resource" "deploy_ingress" {
-  depends_on = [null_resource.verify_ingress_nginx]
+resource "null_resource" "deploy_metrics_server" {
+  # Trigger only after cluster is created
+  depends_on = [null_resource.deploy_postgres]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ./k8s/ingress"
+    command = "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
   }
 }
 

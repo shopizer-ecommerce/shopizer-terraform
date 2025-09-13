@@ -1,14 +1,4 @@
 apiVersion: v1
-kind: Secret
-metadata:
-  name: postgres-secret
-type: Opaque
-stringData:
-  POSTGRES_USER: user
-  POSTGRES_PASSWORD: pass
-  POSTGRES_DB: db
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
@@ -35,7 +25,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:15
+          image: pgvector/pgvector:pg16
           ports:
             - containerPort: 5432
           envFrom:

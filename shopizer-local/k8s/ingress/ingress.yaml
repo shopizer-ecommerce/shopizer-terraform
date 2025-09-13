@@ -31,6 +31,20 @@ spec:
                 name: references
                 port:
                   number: 80
+          - path: /shop
+            pathType: Prefix
+            backend:
+              service:
+                name: shop
+                port:
+                  number: 80
+          - path: /user
+            pathType: Prefix
+            backend:
+              service:
+                name: user
+                port:
+                  number: 80
     - host: keycloak
       http:
         paths:

@@ -36,6 +36,11 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: APPLICATION_DB_PASSWORD
+            - name: APPLICATION_REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_REDIS_HOST
             - name: APPLICATION_ISSUER_URL
               valueFrom:
                 secretKeyRef:

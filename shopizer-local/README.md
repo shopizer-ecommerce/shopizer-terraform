@@ -15,6 +15,34 @@ terraform apply -var-file variables.tfvars
 terraform destroy -var-file variables.tfvars
 ```
 
+In case of provisionner-error
+
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=120s
+
+Post installation
+
+- install nginx ingress
+
+`
+kubectl create -f k8s/ingress/ingress.yaml
+`
+
+- generate new client id
+- if open apu is involved get ur token
+
+- Need to use metrics server ?
+install self signed certs
+`
+kubectl patch deployment metrics-server -n kube-system \
+  --type='json' \
+  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+`
+
+Cleanup
+
 Delete all images by tag 
 docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":4.0.1.2" | awk '{print $2}' | xargs -r docker rmi
 
@@ -37,11 +65,14 @@ Open localhost/pgadmin
 User: admin@shopizer.com
 password: Sunshine001!
 
-Connect to the database
+Connect to the database from pgadmin
 Host: postgres
 port: 5432
 user:user
 password:pass
+
+kubectl exec -it pgadmin-d6959f9b8-9gnh7 -- psql -U postgres -d shop -c '\dx'
+
 
 ## Keycloak
 
@@ -73,3 +104,5 @@ http://localhost/keycloak/realms/master/protocol/openid-connect/auth?response_ty
 http://localhost/keycloak/realms/master/protocol/openid-connect/auth
 
 http://localhost/keycloak/realms/master/protocol/openid-connect/token
+
+psql -U user --d db -c '\dx'
