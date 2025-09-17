@@ -15,18 +15,12 @@ spec:
       containers:
         - name: shop
           image: localhost:5001/shopizer-shop:latest
-          ports:
-            - containerPort: 8080
-#          resources:
-#            requests:
-#              memory: "500Mi"
-#              cpu: "250m"
-#            limits:
-#              memory: "500Mi"
-#              cpu: "500m"
           env:
             - name: JAVA_TOOL_OPTIONS
-              value: "-Xmx500m -XX:MaxMetaspaceSize=256m -XX:ReservedCodeCacheSize=32m"
+              value: >
+                -XX:+UseContainerSupport
+                -XX:MaxRAMPercentage=75.0
+#                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
             - name: APPLICATION_DB_HOST
               valueFrom:
                 secretKeyRef:
@@ -72,3 +66,13 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: OPENAI_API_KEY
+          ports:
+            - containerPort: 8080
+#            - containerPort: 5006   # debug port
+#          resources:
+#            requests:
+#              memory: "1Gi"
+#              cpu: "500m"
+#            limits:
+#              memory: "2Gi"
+#              cpu: "1"

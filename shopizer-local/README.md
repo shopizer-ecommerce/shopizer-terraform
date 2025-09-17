@@ -24,13 +24,13 @@ kubectl wait --namespace ingress-nginx \
 
 Post installation
 
-- install nginx ingress
+- install nginx ** ingress **
 
 `
 kubectl create -f k8s/ingress/ingress.yaml
 `
 
-- generate new client id
+- generate new client id in ** keycloak **
 - if open apu is involved get ur token
 
 - Need to use metrics server ?
@@ -44,8 +44,7 @@ kubectl patch deployment metrics-server -n kube-system \
 Cleanup
 
 Delete all images by tag 
-docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":4.0.1.2" | awk '{print $2}' | xargs -r docker rmi
-
+docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":4.0.1.5" | awk '{print $2}' | xargs -r docker rmi
 
 Delete images with repo starting with
 docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "^paketobuildpacks" | awk '{print $2}' | xargs -r docker rmi

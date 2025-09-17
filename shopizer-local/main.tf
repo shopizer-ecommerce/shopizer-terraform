@@ -146,23 +146,23 @@ resource "null_resource" "deploy_ingress_nginx" {
   }
 }
 
-resource "null_resource" "verify_ingress_nginx" {
-  # Trigger only after cluster is created
-  depends_on = [null_resource.deploy_ingress_nginx]
+#resource "null_resource" "verify_ingress_nginx" {
+# Trigger only after cluster is created
+#  depends_on = [null_resource.deploy_ingress_nginx]
 
-  provisioner "local-exec" {
-    command = "kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s"
-  }
-}
+#  provisioner "local-exec" {
+#    command = "kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s"
+#  }
+#}
 
-resource "null_resource" "deploy_metrics_server" {
-  # Trigger only after cluster is created
-  depends_on = [null_resource.deploy_postgres]
+#resource "null_resource" "deploy_metrics_server" {
+#  # Trigger only after cluster is created
+#  depends_on = [null_resource.deploy_postgres]
 
-  provisioner "local-exec" {
-    command = "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
-  }
-}
+#  provisioner "local-exec" {
+#    command = "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+#  }
+#}
 
 
 resource "null_resource" "delete_kind_cluster" {
