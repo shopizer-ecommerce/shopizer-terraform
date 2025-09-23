@@ -48,6 +48,11 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: APPLICATION_SERVICE_ISSUER_URL
+            - name: APPLICATION_SERVICE_ISSUER_REALM
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_SERVICE_ISSUER_REALM
             - name: APPLICATION_CLIENT_ID
               valueFrom:
                 secretKeyRef:
@@ -60,3 +65,7 @@ spec:
                   key: APPLICATION_CLIENT_SECRET
             - name: MERCHANT_URL
               value: merchant
+            - name: JAVA_TOOL_OPTIONS
+              value: >
+                -XX:+UseContainerSupport
+                -XX:MaxRAMPercentage=75.0
