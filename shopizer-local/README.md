@@ -22,6 +22,9 @@ kubectl wait --namespace ingress-nginx \
   --selector=app.kubernetes.io/component=controller \
   --timeout=120s
 
+Debug -> port forward
+kubectl port-forward deployment/merchant 5005:5005
+
 Post installation
 
 - install nginx ** ingress **
