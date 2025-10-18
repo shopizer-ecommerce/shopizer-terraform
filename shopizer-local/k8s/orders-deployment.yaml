@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders
+  template:
+    metadata:
+      labels:
+        app: orders
+    spec:
+      containers:
+        - name: orders
+          image: localhost:5001/ordersizer-orders:latest
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: >
+                -XX:+UseContainerSupport
+                -XX:MaxRAMPercentage=75.0
+#                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
+            - name: APPLICATION_DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_DB_HOST
+            - name: APPLICATION_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_DB_NAME
+            - name: APPLICATION_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_DB_USER
+            - name: APPLICATION_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_DB_PASSWORD
+            - name: APPLICATION_ISSUER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_ISSUER_URL
+            - name: APPLICATION_SERVICE_ISSUER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_SERVICE_ISSUER_URL
+            - name: APPLICATION_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CLIENT_ID
+            - name: APPLICATION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CLIENT_SECRET
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: OPENAI_API_KEY
+          ports:
+            - containerPort: 8080
+#            - containerPort: 5007   # debug port
+#          resources:
+#            requests:
+#              memory: "1Gi"
+#              cpu: "500m"
+#            limits:
+#              memory: "2Gi"
+#              cpu: "1"

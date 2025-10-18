@@ -45,6 +45,13 @@ spec:
                 name: user
                 port:
                   number: 80
+          - path: /orders
+            pathType: Prefix
+            backend:
+              service:
+                name: orders
+                port:
+                  number: 80
     - host: keycloak
       http:
         paths:

@@ -5,6 +5,7 @@
 - Docker Desktop
 - Terraform
 - Kubectl
+- java 21
 
 # Script execution
 
@@ -48,8 +49,8 @@ Cleanup
 
 Delete all images by tag 
 docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":4.0.1.5" | awk '{print $2}' | xargs -r docker rmi
+docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":latest" | awk '{print $2}' | xargs -r docker rmi
 
-Delete images with repo starting with
 docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "^paketobuildpacks" | awk '{print $2}' | xargs -r docker rmi
 
 complete terraform destroy flow that removes 
