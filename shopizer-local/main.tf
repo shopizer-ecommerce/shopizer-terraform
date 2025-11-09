@@ -174,10 +174,10 @@ resource "null_resource" "delete_kind_cluster" {
     when    = destroy
     command = <<EOT
       echo "🔧 Starting destroy"
-      kind delete cluster --name terraform-kind
+      kind get clusters | grep -q '^terraform-kind$' && kind delete cluster --name terraform-kind
       echo "Cleaning up registry and Docker network..."
-      docker rm -f kind-registry || true
-      docker network rm kind || true
+      docker ps -a --format '{{.Names}}' | grep -q '^kind-registry$' && docker rm -f kind-registry || true
+      docker network inspect kind >/dev/null 2>&1 && docker network rm kind || true
       echo "Removing images..."
       docker images --format "{{.Repository}}:{{.Tag}}" | grep '^localhost:5001/shopizer-' | xargs -r docker rmi
     EOT

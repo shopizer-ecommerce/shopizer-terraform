@@ -7,9 +7,17 @@
 - Kubectl
 - java 21
 
+
+Make sure you are using java 21
+`
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+echo $JAVA_HOME
+java --version
+`
+
 # Script execution
 
-```
+```d
 terraform init
 terraform plan -var-file variables.tfvars
 terraform apply -var-file variables.tfvars

@@ -14,13 +14,13 @@ spec:
     spec:
       containers:
         - name: orders
-          image: localhost:5001/ordersizer-orders:latest
+          image: localhost:5001/shopizer-orders:latest
           env:
             - name: JAVA_TOOL_OPTIONS
               value: >
                 -XX:+UseContainerSupport
                 -XX:MaxRAMPercentage=75.0
-#                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
+#                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
             - name: APPLICATION_DB_HOST
               valueFrom:
                 secretKeyRef:

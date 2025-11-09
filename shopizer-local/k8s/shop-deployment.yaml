@@ -20,7 +20,11 @@ spec:
               value: >
                 -XX:+UseContainerSupport
                 -XX:MaxRAMPercentage=75.0
-#                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
+                -XX:MaxMetaspaceSize=128m
+                -XX:ReservedCodeCacheSize=64m
+                -XX:MaxDirectMemorySize=16m
+                -Xss512k
+                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5008
             - name: APPLICATION_DB_HOST
               valueFrom:
                 secretKeyRef:
@@ -41,6 +45,11 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: APPLICATION_DB_PASSWORD
+            - name: APPLICATION_REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_REDIS_HOST
             - name: APPLICATION_ISSUER_URL
               valueFrom:
                 secretKeyRef:
@@ -68,11 +77,9 @@ spec:
                   key: OPENAI_API_KEY
           ports:
             - containerPort: 8080
-#            - containerPort: 5006   # debug port
-#          resources:
-#            requests:
-#              memory: "1Gi"
-#              cpu: "500m"
-#            limits:
-#              memory: "2Gi"
-#              cpu: "1"
+            - containerPort: 5008   # debug port
+          resources:
+            requests:
+              memory: 512Mi
+            limits:
+              memory: 1024Mi

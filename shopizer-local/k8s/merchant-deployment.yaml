@@ -65,7 +65,7 @@ spec:
               value: >
                 -XX:+UseContainerSupport
                 -XX:MaxRAMPercentage=75.0
-                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+#                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
           ports:
             - containerPort: 8080
-            - containerPort: 5005   # debug port
+ #           - containerPort: 5005   # debug port
