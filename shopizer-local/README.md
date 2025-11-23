@@ -24,22 +24,70 @@ terraform apply -var-file variables.tfvars
 terraform destroy -var-file variables.tfvars
 ```
 
-In case of provisionner-error
+## Post installation
 
+Check that the ingress is ok
+
+`
 kubectl wait --namespace ingress-nginx \
   --for=condition=ready pod \
   --selector=app.kubernetes.io/component=controller \
   --timeout=120s
+`
+Wait and retry when getting this response 
+Unable to connect to the server: net/http: TLS handshake timeout
+
+This is the answer we want
+condition met
+
+## Careate the ingress yaml
+
+`
+kubectl create -f k8s/ingress/ingress.yaml
+`
+
+## Adjust App secret
+
+
+## Change the secret to keycloak
+
+kubectl apply -f k8s/app-secret.yaml
+
+## Recommanded API keys
+
+apply app-secret with open api key
+add your open api key to keys/__OPENAPI_KEY__
+
+`
+echo "open api key" > keys/__OPENAPI_KEY__
+sed "s|__API_KEY__|$(base64 -w0 ./k8s/__OPENAPI_KEY__)|g" k8s/app-secret.yaml | kubectl apply -f -
+`
+
+## Remote Debug
 
 Debug -> port forward
-kubectl port-forward deployment/merchant 5005:5005
 
-Post installation
+`
+## Port forward the required service, assumes one remote debut at a time
+kubectl port-forward deployment/merchant 5005:5005
+kubectl port-forward deployment/shop 5008:5008
+
+`
+
+
+  `
 
 - install nginx ** ingress **
 
 `
 kubectl create -f k8s/ingress/ingress.yaml
+`
+
+- configure keycloak
+
+`
+cd keycloak
+
 `
 
 - generate new client id in ** keycloak **
@@ -56,10 +104,21 @@ kubectl patch deployment metrics-server -n kube-system \
 Cleanup
 
 Delete all images by tag 
-docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":4.0.1.5" | awk '{print $2}' | xargs -r docker rmi
-docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":latest" | awk '{print $2}' | xargs -r docker rmi
 
+docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":latest" | awk '{print $2}' | xargs -r docker rmi
 docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "^paketobuildpacks" | awk '{print $2}' | xargs -r docker rmi
+
+docker stop  kind-registry
+docker stop terraform-kind-control-plane
+
+docker rmi -f $(docker images kindest/node -q) || true
+docker rmi -f $(docker images registry -q) || true
+
+catch all
+
+docker ps -aq | xargs -r docker rm -f
+
+Performs:
 
 complete terraform destroy flow that removes 
 registry
@@ -87,19 +146,7 @@ kubectl exec -it pgadmin-d6959f9b8-9gnh7 -- psql -U postgres -d shop -c '\dx'
 
 ## Keycloak
 
-http://localhost/keycloak
-Login with user and password from keycloak-secret.yaml
-click on clients
-create new client 
-ClientID: shopizer
-Client authentication: on
-Authorization: on
-Standard flow, Direct Access grant, Implicit flow, OAuth 2.0
-Login theme shopizer
-Cretae client scope admin
-add client scope to ClientID shopizer
-master realm add profile attribute org
-
+TODO
 
 
 ## Services
