@@ -13,8 +13,11 @@ terraform {
 # Generate random client secret
 # --------------------------------------------------
 resource "random_password" "shopizer_client_secret" {
-  length  = 32
-  special = true
+  length = 32
+  lower  = true
+  upper  = true
+  numeric = true
+  special = false
 }
 
 
@@ -165,7 +168,7 @@ resource "keycloak_openid_client_scope" "admin" {
   ]
 }
 
-# 4. Roles
+# 4. Client Roles
 resource "keycloak_role" "admin_role" {
   realm_id  = keycloak_realm.shopizer_realm.id
   client_id = keycloak_openid_client.shopizer_client.id
@@ -182,6 +185,34 @@ resource "keycloak_role" "superadmin_role" {
   depends_on = [
     keycloak_openid_client.shopizer_client
   ]
+}
+
+# --------------------------------------------------
+# Attach optional scopes
+# --------------------------------------------------
+resource "keycloak_openid_client_optional_scopes" "shopizer_client_optionals" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = keycloak_openid_client.shopizer_client.id
+
+  optional_scopes = [
+    keycloak_openid_client_scope.admin.name,
+    keycloak_openid_client_scope.read.name,
+    keycloak_openid_client_scope.write.name
+  ]
+}
+
+resource "keycloak_openid_user_attribute_protocol_mapper" "org_mapper" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = keycloak_openid_client.shopizer_client.id
+
+  name                 = "org"
+  user_attribute       = "org"
+  claim_name           = "org"
+  claim_value_type     = "String"
+
+  add_to_id_token      = true
+  add_to_access_token  = true
+  add_to_userinfo      = true
 }
 
 # Output the generated client_id
