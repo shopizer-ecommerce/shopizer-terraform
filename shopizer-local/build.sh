@@ -32,6 +32,10 @@ REGISTRY="localhost:5001"
 
 echo "Detected project version: $POM_VERSION"
 
+cd "$APP_PATH"
+ ./mvnw clean install -DskipTests
+
+
 #for service in "$@"; do
 for service in "${SERVICES[@]}"; do
   SERVICE_DIR="$APP_PATH/$service"

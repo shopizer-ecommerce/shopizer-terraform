@@ -33,6 +33,8 @@ spec:
                 name: postgres-secret
           volumeMounts:
             - name: postgres-storage
+              # Persist data to an absolute path
+              # /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/postgres-data
               mountPath: /var/lib/postgresql/data
             - name: init-script
               mountPath: /docker-entrypoint-initdb.d

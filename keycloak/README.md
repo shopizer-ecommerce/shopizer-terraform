@@ -1,8 +1,8 @@
 Delete shopizer realm by hand
 terraform init
-terraform plan -var-file terraform.tfvars
-terraform apply -var-file terraform.tfvars
-terraform destroy -var-file terraform.tfvars
+terraform plan -var-file variables.tfvars
+terraform apply -var-file variables.tfvars
+terraform destroy -var-file variables.tfvars
 
 #TODO Realm Roles are not created
 

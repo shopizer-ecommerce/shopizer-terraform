@@ -50,8 +50,9 @@ kubectl create -f k8s/ingress/ingress.yaml
 
 
 ## Change the secret to keycloak
-
+`
 kubectl apply -f k8s/app-secret.yaml
+`
 
 ## Recommanded API keys
 
