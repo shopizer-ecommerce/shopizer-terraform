@@ -48,6 +48,7 @@ resource "keycloak_realm" "shopizer_realm" {
   registration_email_as_username = true
   duplicate_emails_allowed       = false
   edit_username_allowed          = true
+  login_theme                    = "shopizer"
 }
 
 # -------------------------
@@ -169,6 +170,15 @@ resource "keycloak_openid_client_scope" "admin" {
 }
 
 # 4. Client Roles
+resource "keycloak_role" "user_role" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = keycloak_openid_client.shopizer_client.id
+  name      = "user"
+  depends_on = [
+    keycloak_openid_client.shopizer_client
+  ]
+}
+
 resource "keycloak_role" "admin_role" {
   realm_id  = keycloak_realm.shopizer_realm.id
   client_id = keycloak_openid_client.shopizer_client.id
