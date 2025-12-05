@@ -17,6 +17,7 @@ spec:
           image: localhost:5001/shopizer-user:latest
           ports:
             - containerPort: 8080
+            - containerPort: 5007
           env:
             - name: APPLICATION_DB_HOST
               valueFrom:
@@ -64,8 +65,12 @@ spec:
                   name: app-secret
                   key: APPLICATION_CLIENT_SECRET
             - name: MERCHANT_URL
-              value: merchant
+              value: http://merchant
+            - name: AUTH_URL
+              value: http://keycloak.default.svc.cluster.local/keycloak
             - name: JAVA_TOOL_OPTIONS
               value: >
                 -XX:+UseContainerSupport
                 -XX:MaxRAMPercentage=75.0
+                -Xss512k
+                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
