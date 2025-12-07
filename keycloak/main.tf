@@ -7,7 +7,44 @@ terraform {
   }
 }
 
+############################################
+# 1️⃣  Lookup the built-in clients
+############################################
 
+# realm-management client (contains admin roles)
+data "keycloak_openid_client" "realm_management" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = "realm-management"
+}
+
+# account client (contains end-user roles)
+data "keycloak_openid_client" "account" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = "account"
+}
+
+
+############################################
+# 2️⃣  Lookup the existing roles you need
+############################################
+
+data "keycloak_role" "manage_users" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = data.keycloak_openid_client.realm_management.id
+  name      = "manage-users"
+}
+
+data "keycloak_role" "query_users" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = data.keycloak_openid_client.realm_management.id
+  name      = "query-users"
+}
+
+data "keycloak_role" "view_profile" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = data.keycloak_openid_client.account.id
+  name      = "view-profile"
+}
 
 # --------------------------------------------------
 # Generate random client secret
@@ -63,7 +100,8 @@ resource "keycloak_openid_client" "shopizer_client" {
   standard_flow_enabled         = true
   direct_access_grants_enabled  = true
   implicit_flow_enabled         = true
-  service_accounts_enabled      = false
+  # allow to use client admin
+  service_accounts_enabled      = true
 
   valid_redirect_uris = ["*"]
   web_origins         = ["*"]
@@ -241,6 +279,32 @@ output "shopizer_client_secret" {
   description = "The generated client_secret for the Shopizer client"
   value       = random_password.shopizer_client_secret.result
   sensitive   = true
+}
+
+############################################
+# 3️⃣  Assign those roles to your service account
+############################################
+
+resource "keycloak_openid_client_service_account_role" "manage_users_role_assignment_1" {
+    realm_id                = keycloak_realm.shopizer_realm.id
+    service_account_user_id = keycloak_openid_client.shopizer_client.service_account_user_id
+    depends_on = [
+      keycloak_openid_client.shopizer_client
+      
+    ]
+    client_id               = data.keycloak_openid_client.realm_management.id
+    role                    = "manage-users"
+}
+
+resource "keycloak_openid_client_service_account_role" "manage_users_role_assignment_2" {
+    realm_id                = keycloak_realm.shopizer_realm.id
+    service_account_user_id = keycloak_openid_client.shopizer_client.service_account_user_id
+    depends_on = [
+      keycloak_openid_client.shopizer_client
+      
+    ]
+    client_id               = data.keycloak_openid_client.realm_management.id
+    role                    = "query-users"
 }
 
 
