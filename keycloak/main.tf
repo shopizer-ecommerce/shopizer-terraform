@@ -89,7 +89,7 @@ resource "keycloak_realm" "shopizer_realm" {
 }
 
 # -------------------------
-# Client definition
+# Client definition for backend (service account)
 # -------------------------
 resource "keycloak_openid_client" "shopizer_client" {
   realm_id                     = keycloak_realm.shopizer_realm.id
@@ -100,6 +100,7 @@ resource "keycloak_openid_client" "shopizer_client" {
   standard_flow_enabled         = true
   direct_access_grants_enabled  = true
   implicit_flow_enabled         = true
+  #pkce_code_challenge_method    = "S256"
   # allow to use client admin
   service_accounts_enabled      = true
 
@@ -109,6 +110,30 @@ resource "keycloak_openid_client" "shopizer_client" {
   # Auto-generated secret
   client_secret = random_password.shopizer_client_secret.result
 }
+
+resource "keycloak_openid_client" "shopizer_spa_client" {
+  realm_id                      = keycloak_realm.shopizer_realm.id
+  client_id                     = "${var.client_id}-spa"  # e.g. shopizer-spa
+  name                          = "${var.client_name} SPA"
+  enabled                       = true
+
+  access_type                   = "PUBLIC"
+  standard_flow_enabled         = true
+  implicit_flow_enabled         = false
+  direct_access_grants_enabled  = false
+
+  pkce_code_challenge_method    = "S256"
+
+  # This is the test react admin
+  valid_redirect_uris = [
+    "http://localhost:5173/*"
+  ]
+
+  web_origins = [
+    "http://localhost:5173"
+  ]
+}
+
 
 
 
@@ -207,33 +232,50 @@ resource "keycloak_openid_client_scope" "admin" {
   ]
 }
 
-# 4. Client Roles
-resource "keycloak_role" "user_role" {
-  realm_id  = keycloak_realm.shopizer_realm.id
-  client_id = keycloak_openid_client.shopizer_client.id
-  name      = "user"
-  depends_on = [
-    keycloak_openid_client.shopizer_client
-  ]
-}
+# 4. Realm Roles
 
 resource "keycloak_role" "admin_role" {
-  realm_id  = keycloak_realm.shopizer_realm.id
-  client_id = keycloak_openid_client.shopizer_client.id
-  name      = "admin"
-  depends_on = [
-    keycloak_openid_client.shopizer_client
-  ]
+  realm_id = keycloak_realm.shopizer_realm.id
+  name     = "admin"
+}
+
+resource "keycloak_role" "user_role" {
+  realm_id = keycloak_realm.shopizer_realm.id
+  name     = "user"
 }
 
 resource "keycloak_role" "superadmin_role" {
-  realm_id  = keycloak_realm.shopizer_realm.id
-  client_id = keycloak_openid_client.shopizer_client.id
-  name      = "superadmin"
-  depends_on = [
-    keycloak_openid_client.shopizer_client
-  ]
+  realm_id = keycloak_realm.shopizer_realm.id
+  name     = "superadmin"
 }
+
+# 4. Client Roles
+#resource "keycloak_role" "user_role" {
+#  realm_id  = keycloak_realm.shopizer_realm.id
+#  client_id = keycloak_openid_client.shopizer_client.id
+#  name      = "user"
+#  depends_on = [
+#    keycloak_openid_client.shopizer_client
+#  ]
+#}
+
+#resource "keycloak_role" "admin_role" {
+#  realm_id  = keycloak_realm.shopizer_realm.id
+#  client_id = keycloak_openid_client.shopizer_client.id
+#  name      = "admin"
+#  depends_on = [
+#    keycloak_openid_client.shopizer_client
+#  ]
+#}
+
+#resource "keycloak_role" "superadmin_role" {
+#  realm_id  = keycloak_realm.shopizer_realm.id
+#  client_id = keycloak_openid_client.shopizer_client.id
+#  name      = "superadmin"
+#  depends_on = [
+#    keycloak_openid_client.shopizer_client
+#  ]
+#}
 
 # --------------------------------------------------
 # Attach optional scopes
