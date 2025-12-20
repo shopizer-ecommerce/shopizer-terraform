@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user
+  name: users
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: user
+      app: users
   template:
     metadata:
       labels:
-        app: user
+        app: users
     spec:
       containers:
-        - name: user
-          image: localhost:5001/shopizer-user:latest
+        - name: users
+          image: localhost:5001/shopizer-users:latest
           ports:
             - containerPort: 8080
             - containerPort: 5007

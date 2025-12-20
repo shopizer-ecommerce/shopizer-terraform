@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+
 APP_PATH=$1
 shift
 SERVICES=("$@")
@@ -50,7 +51,7 @@ for service in "${SERVICES[@]}"; do
 
   echo "🔨 Building image for shopizer-$service"
   ./mvnw clean package -DskipTests
-  ./mvnw spring-boot:build-image -Dspring-boot.build-image.imageName=$REGISTRY/shopizer-$service:$POM_VERSION -Dspring-boot.build-image.verbose=true
+  ./mvnw spring-boot:build-image -Dspring-boot.build-image.imageName=$REGISTRY/shopizer-$service:$POM_VERSION -Dspring-boot.build-image.verbose=true -Pno-tests
 
   echo "📤 Pushing $REGISTRY/shopizer-$service:$POM_VERSION"
   docker push $REGISTRY/shopizer-$service:$POM_VERSION

@@ -16,7 +16,7 @@ variable "registry" {
 
 variable "microservices" {
   type    = list(string)
-  default = ["references", "merchant", "user", "shop", "orders"]
+  default = ["references", "merchant", "users", "shop", "orders"]
 }
 
 variable "app_path" {
