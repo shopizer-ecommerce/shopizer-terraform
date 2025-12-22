@@ -46,6 +46,7 @@ data "keycloak_role" "view_profile" {
   name      = "view-profile"
 }
 
+
 # --------------------------------------------------
 # Generate random client secret
 # --------------------------------------------------
@@ -125,12 +126,14 @@ resource "keycloak_openid_client" "shopizer_spa_client" {
   pkce_code_challenge_method    = "S256"
 
   # This is the test react admin
+  #scope
   valid_redirect_uris = [
-    "http://localhost:5173/*"
+    "*"
   ]
 
+  #scope
   web_origins = [
-    "http://localhost:5173"
+    "*"
   ]
 }
 
@@ -249,33 +252,6 @@ resource "keycloak_role" "superadmin_role" {
   name     = "superadmin"
 }
 
-# 4. Client Roles
-#resource "keycloak_role" "user_role" {
-#  realm_id  = keycloak_realm.shopizer_realm.id
-#  client_id = keycloak_openid_client.shopizer_client.id
-#  name      = "user"
-#  depends_on = [
-#    keycloak_openid_client.shopizer_client
-#  ]
-#}
-
-#resource "keycloak_role" "admin_role" {
-#  realm_id  = keycloak_realm.shopizer_realm.id
-#  client_id = keycloak_openid_client.shopizer_client.id
-#  name      = "admin"
-#  depends_on = [
-#    keycloak_openid_client.shopizer_client
-#  ]
-#}
-
-#resource "keycloak_role" "superadmin_role" {
-#  realm_id  = keycloak_realm.shopizer_realm.id
-#  client_id = keycloak_openid_client.shopizer_client.id
-#  name      = "superadmin"
-#  depends_on = [
-#    keycloak_openid_client.shopizer_client
-#  ]
-#}
 
 # --------------------------------------------------
 # Attach optional scopes
@@ -291,7 +267,23 @@ resource "keycloak_openid_client_optional_scopes" "shopizer_client_optionals" {
   ]
 }
 
+# - Add org as claim for both clients
+
 resource "keycloak_openid_user_attribute_protocol_mapper" "org_mapper" {
+  realm_id  = keycloak_realm.shopizer_realm.id
+  client_id = keycloak_openid_client.shopizer_spa_client.id
+
+  name                 = "org"
+  user_attribute       = "org"
+  claim_name           = "org"
+  claim_value_type     = "String"
+
+  add_to_id_token      = true
+  add_to_access_token  = true
+  add_to_userinfo      = true
+}
+
+resource "keycloak_openid_user_attribute_protocol_mapper" "org_mapper_2" {
   realm_id  = keycloak_realm.shopizer_realm.id
   client_id = keycloak_openid_client.shopizer_client.id
 
@@ -348,5 +340,45 @@ resource "keycloak_openid_client_service_account_role" "manage_users_role_assign
     client_id               = data.keycloak_openid_client.realm_management.id
     role                    = "query-users"
 }
+
+resource "keycloak_user" "admin_user" {
+  realm_id = keycloak_realm.shopizer_realm.id
+
+  username = "admin@shopizer.com"
+  email    = "admin@shopizer.com"
+
+  first_name     = "admin"
+  last_name      = "shopizer"
+  enabled        = true
+  email_verified = true
+
+  attributes = {
+    org = "DEFAULT"
+  }
+
+  initial_password {
+    value     = "Sunshine001!"
+    temporary = false
+  }
+
+  depends_on = [
+    keycloak_realm_user_profile.shopizer_user_profile
+  ]
+}
+
+resource "keycloak_user_roles" "admin_user_roles" {
+  realm_id = keycloak_realm.shopizer_realm.id
+  user_id  = keycloak_user.admin_user.id
+
+  role_ids = [
+    keycloak_role.user_role.id,
+    keycloak_role.superadmin_role.id
+  ]
+
+  depends_on = [
+    keycloak_user.admin_user
+  ]
+}
+
 
 
