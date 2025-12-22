@@ -66,6 +66,7 @@ spec:
                   key: APPLICATION_CLIENT_SECRET
             - name: MERCHANT_URL
               value: http://merchant
+              #url to call from backend services
             - name: AUTH_URL
               value: http://keycloak.default.svc.cluster.local/keycloak
             - name: JAVA_TOOL_OPTIONS

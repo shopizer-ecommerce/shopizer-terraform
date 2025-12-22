@@ -38,11 +38,11 @@ spec:
                 name: shop
                 port:
                   number: 80
-          - path: /user
+          - path: /users
             pathType: Prefix
             backend:
               service:
-                name: user
+                name: users
                 port:
                   number: 80
           - path: /orders

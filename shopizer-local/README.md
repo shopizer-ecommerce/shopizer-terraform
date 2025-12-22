@@ -72,7 +72,7 @@ Debug -> port forward
 ## Port forward the required service, assumes one remote debut at a time
 kubectl port-forward deployment/merchant 5005:5005
 kubectl port-forward deployment/shop 5008:5008
-kubectl port-forward deployment/user 5007:5007
+kubectl port-forward deployment/users 5007:5007
 
 `
 
