@@ -18,6 +18,24 @@ provider "docker" {
   host = "unix:///var/run/docker.sock"
 }
 
+resource "null_resource" "ensure_postgres_data_dir" {
+  # Make sure the hostPath for Postgres persistence exists before Kind starts
+  provisioner "local-exec" {
+    command = "mkdir -p \"${var.postgres_data_host_path}\""
+  }
+
+  triggers = {
+    path = var.postgres_data_host_path
+  }
+}
+
+resource "local_file" "kind_config" {
+  content  = templatefile("${path.module}/kind-config.tftpl", { host_path = var.postgres_data_host_path })
+  filename = "${path.module}/kind-config.generated.yaml"
+
+  depends_on = [null_resource.ensure_postgres_data_dir]
+}
+
 resource "null_resource" "build_and_push_images" {
   depends_on = [docker_container.local_registry]
   provisioner "local-exec" {
@@ -65,12 +83,12 @@ resource "null_resource" "install_tools" {
 }
 
 resource "null_resource" "create_kind_cluster" {
-  depends_on = [null_resource.install_tools]
+  depends_on = [null_resource.install_tools, null_resource.ensure_postgres_data_dir, local_file.kind_config]
 
   provisioner "local-exec" {
     command = <<-EOT
       if ! kind get clusters | grep -q terraform-kind; then
-        kind create cluster --name terraform-kind --config kind-config.yaml
+        kind create cluster --name terraform-kind --config ${local_file.kind_config.filename}
       else
         echo "Kind cluster 'terraform-kind' already exists."
       fi
@@ -165,8 +183,6 @@ resource "null_resource" "delete_kind_cluster" {
     EOT
   }
 }
-
-
 
 
 

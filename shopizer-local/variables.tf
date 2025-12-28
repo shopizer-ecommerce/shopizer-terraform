@@ -22,3 +22,8 @@ variable "microservices" {
 variable "app_path" {
   description = "Relative path to the Maven parent project"
 }
+
+variable "postgres_data_host_path" {
+  description = "Host path on the Mac to store Postgres data for Kind (will be mounted into the node)"
+  type        = string
+}

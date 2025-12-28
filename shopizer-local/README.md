@@ -54,6 +54,12 @@ kubectl create -f k8s/ingress/ingress.yaml
 kubectl apply -f k8s/app-secret.yaml
 `
 
+## restart pods that are dependant to secrets
+
+` 
+kubectl rollout restart deployment/users
+`
+
 ## Recommanded API keys
 
 apply app-secret with open api key
@@ -108,6 +114,7 @@ Cleanup
 Delete all images by tag 
 
 docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep ":latest" | awk '{print $2}' | xargs -r docker rmi
+
 docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "^paketobuildpacks" | awk '{print $2}' | xargs -r docker rmi
 
 docker stop  kind-registry
@@ -120,6 +127,11 @@ catch all
 
 docker ps -aq | xargs -r docker rm -f
 
+terraform init
+
+docker builder prune -af
+docker image prune -af
+
 Performs:
 
 complete terraform destroy flow that removes 
@@ -127,6 +139,7 @@ registry
 containers
 docker images
 kind cluster
+initialize terraform
 
 # Post installation
 
