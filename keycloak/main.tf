@@ -341,6 +341,39 @@ resource "keycloak_openid_client_service_account_role" "manage_users_role_assign
     role                    = "query-users"
 }
 
+resource "keycloak_openid_client_service_account_role" "manage_users_role_assignment_3" {
+    realm_id                = keycloak_realm.shopizer_realm.id
+    service_account_user_id = keycloak_openid_client.shopizer_client.service_account_user_id
+    depends_on = [
+      keycloak_openid_client.shopizer_client
+      
+    ]
+    client_id               = data.keycloak_openid_client.realm_management.id
+    role                    = "manage-realm"
+}
+
+resource "keycloak_openid_client_service_account_role" "manage_users_role_assignment_4" {
+    realm_id                = keycloak_realm.shopizer_realm.id
+    service_account_user_id = keycloak_openid_client.shopizer_client.service_account_user_id
+    depends_on = [
+      keycloak_openid_client.shopizer_client
+      
+    ]
+    client_id               = data.keycloak_openid_client.realm_management.id
+    role                    = "query-realms"
+}
+
+resource "keycloak_openid_client_service_account_role" "manage_users_role_assignment_5" {
+    realm_id                = keycloak_realm.shopizer_realm.id
+    service_account_user_id = keycloak_openid_client.shopizer_client.service_account_user_id
+    depends_on = [
+      keycloak_openid_client.shopizer_client
+      
+    ]
+    client_id               = data.keycloak_openid_client.realm_management.id
+    role                    = "manage-users"
+}
+
 resource "keycloak_user" "admin_user" {
   realm_id = keycloak_realm.shopizer_realm.id
 

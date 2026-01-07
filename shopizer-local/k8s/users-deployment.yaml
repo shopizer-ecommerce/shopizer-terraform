@@ -74,4 +74,4 @@ spec:
                 -XX:+UseContainerSupport
                 -XX:MaxRAMPercentage=75.0
                 -Xss512k
-                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
+#                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007

@@ -70,7 +70,7 @@ spec:
                 -XX:ReservedCodeCacheSize=64m
                 -XX:MaxDirectMemorySize=16m
                 -Xss512k
-#                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
           ports:
             - containerPort: 8080
  #           - containerPort: 5005   # debug port

@@ -94,7 +94,7 @@ kubectl create -f k8s/ingress/ingress.yaml
 - configure keycloak
 
 `
-cd keycloak
+cd ../keycloak
 
 `
 
@@ -127,10 +127,10 @@ catch all
 
 docker ps -aq | xargs -r docker rm -f
 
-terraform init
-
 docker builder prune -af
 docker image prune -af
+
+terraform init
 
 Performs:
 

@@ -9,3 +9,4 @@
 *.tfvars
 
 shopizer-local/k8s/keys/*
+postgres-data
