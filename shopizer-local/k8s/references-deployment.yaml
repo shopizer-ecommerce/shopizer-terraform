@@ -53,6 +53,11 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: APPLICATION_CLIENT_ID
+            - name: APPLICATION_CRYPTO_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CRYPTO_KEY
             - name: APPLICATION_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:

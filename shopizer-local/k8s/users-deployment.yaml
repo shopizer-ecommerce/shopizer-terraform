@@ -64,6 +64,11 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: APPLICATION_CLIENT_SECRET
+            - name: APPLICATION_CRYPTO_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CRYPTO_KEY
             - name: MERCHANT_URL
               value: http://merchant
               #url to call from backend services
@@ -74,4 +79,4 @@ spec:
                 -XX:+UseContainerSupport
                 -XX:MaxRAMPercentage=75.0
                 -Xss512k
-#                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
+                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007

@@ -144,11 +144,16 @@ initialize terraform
 # Post installation
 
 ## Postgres
+Open pgadmin
 
-Open localhost/pgadmin
+`
+localhost/
+`
 
 User: admin@shopizer.com
 password: Sunshine001!
+
+### Register databases in pgadmin
 
 Connect to the database from pgadmin
 Host: postgres

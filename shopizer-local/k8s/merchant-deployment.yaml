@@ -61,6 +61,11 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: APPLICATION_CLIENT_SECRET
+            - name: APPLICATION_CRYPTO_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CRYPTO_KEY
 
             - name: JAVA_TOOL_OPTIONS
               value: >
