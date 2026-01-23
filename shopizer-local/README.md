@@ -153,7 +153,7 @@ localhost/
 User: admin@shopizer.com
 password: Sunshine001!
 
-### Register databases in pgadmin
+### Register databases in
 
 Connect to the database from pgadmin
 Host: postgres
