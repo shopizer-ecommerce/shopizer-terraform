@@ -28,8 +28,13 @@ else
   echo "✅ Java version is supported."
 fi
 
+# Pin JAVA_HOME to 21 if available (macOS) so downstream tools don't drift
+if [[ -x /usr/libexec/java_home ]]; then
+  export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+fi
 
-REGISTRY="localhost:5001"
+
+REGISTRY="127.0.0.1:5001"
 
 echo "Detected project version: $POM_VERSION"
 
@@ -50,9 +55,8 @@ for service in "${SERVICES[@]}"; do
 
 
   echo "🔨 Building image for shopizer-$service"
-  ./mvnw clean package -DskipTests
-  ./mvnw spring-boot:build-image  -DskipTests -Dspring-boot.build-image.imageName=$REGISTRY/shopizer-$service:$POM_VERSION -Dspring-boot.build-image.verbose=true -Pno-tests
-
+  #./mvnw clean package -DskipTests
+  ./mvnw spring-boot:build-image  -DskipTests -Dspring-boot.build-image.imageName=$REGISTRY/shopizer-$service:$POM_VERSION -Dspring-boot.build-image.verbose=true -Dspring-boot.build-image.environment=BP_JVM_VERSION=21 -Pno-tests
   echo "📤 Pushing $REGISTRY/shopizer-$service:$POM_VERSION"
   docker push $REGISTRY/shopizer-$service:$POM_VERSION
   cd - > /dev/null

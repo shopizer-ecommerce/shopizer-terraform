@@ -1,0 +1,44 @@
+name: shopizer-local-cleanup
+vars:
+  SHOPIZER_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/shopizer-local
+  KEYCLOAK_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/shopizer-local/keycloak
+  out_dir: .out
+
+steps:
+  - name: Terraform destroy (shopizer-local)
+    cwd: "${SHOPIZER_DIR}"
+    run:
+      - ["terraform", "init"]
+      - ["terraform", "destroy", "-var-file=variables.tfvars", "-auto-approve"]
+
+  - name: Stop local registry / kind containers
+    run:
+      - ["sh","-lc","docker stop kind-registry terraform-kind-control-plane 2>/dev/null || true"]
+
+  - name: Delete kind cluster
+    run:
+      - ["kind", "delete", "cluster"]
+
+  - name: Remove buildpack/kind/registry images
+    run:
+      - ["sh","-lc","docker images --format \"{{.Repository}}:{{.Tag}} {{.ID}}\" | grep \"^127.0.0.1:5001/shopizer-\" | awk '{print $2}' | xargs -r docker rmi -f"]
+      - ["sh","-lc","docker images --format \"{{.Repository}}:{{.Tag}} {{.ID}}\" | grep \"^paketobuildpacks\" | awk '{print $2}' | xargs -r docker rmi"]
+      - ["sh","-lc","docker rmi -f $(docker images kindest/node -q) || true"]
+      - ["sh","-lc","docker rmi -f $(docker images registry -q) || true"]
+
+  - name: Clear local terraform state files (truncate)
+    cwd: "${SHOPIZER_DIR}"
+    run:
+      - ["sh","-lc",": > terraform.tfstate; : > terraform.tfstate.backup"]
+
+  - name: Remove .terraform and tfstate files (shopizer-local)
+    cwd: "${SHOPIZER_DIR}"
+    run:
+      - ["rm", "-rf", ".terraform"]
+      - ["rm", "-f", "terraform.tfstate", "terraform.tfstate.backup", "terraform.tfstate.d"]
+
+  - name: Remove .terraform and tfstate files (keycloak)
+    cwd: "${KEYCLOAK_DIR}"
+    run:
+      - ["rm", "-rf", ".terraform"]
+      - ["rm", "-f", "terraform.tfstate", "terraform.tfstate.backup", "terraform.tfstate.d"]

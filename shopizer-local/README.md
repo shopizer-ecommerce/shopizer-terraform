@@ -17,7 +17,7 @@ java --version
 
 # Script execution
 
-```d
+```
 terraform init
 terraform plan -var-file variables.tfvars
 terraform apply -var-file variables.tfvars
@@ -132,6 +132,10 @@ docker image prune -af
 
 terraform init
 
+Ultimately if a port is stocked
+lsof -iTCP:5001 -sTCP:LISTEN
+kill -9 the process id
+
 Performs:
 
 complete terraform destroy flow that removes 
@@ -140,6 +144,11 @@ containers
 docker images
 kind cluster
 initialize terraform
+
+Raw srap it
+
+kind delete cluster
+terraform init
 
 # Post installation
 
