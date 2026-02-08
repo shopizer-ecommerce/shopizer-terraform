@@ -55,8 +55,8 @@ for service in "${SERVICES[@]}"; do
 
 
   echo "🔨 Building image for shopizer-$service"
-  #./mvnw clean package -DskipTests
-  ./mvnw spring-boot:build-image  -DskipTests -Dspring-boot.build-image.imageName=$REGISTRY/shopizer-$service:$POM_VERSION -Dspring-boot.build-image.verbose=true -Dspring-boot.build-image.environment=BP_JVM_VERSION=21 -Pno-tests
+  ./mvnw clean package -DskipTests -Pno-tests
+  ./mvnw spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=$REGISTRY/shopizer-$service:$POM_VERSION -Dspring-boot.build-image.verbose=true -Dspring-boot.build-image.environment=BP_JVM_VERSION=21 -Pno-tests
   echo "📤 Pushing $REGISTRY/shopizer-$service:$POM_VERSION"
   docker push $REGISTRY/shopizer-$service:$POM_VERSION
   cd - > /dev/null

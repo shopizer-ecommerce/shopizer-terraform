@@ -5,6 +5,12 @@ vars:
   out_dir: .out
 
 steps:
+  - name: Terraform destroy (keycloak)
+    cwd: "${KEYCLOAK_DIR}"
+    run:
+      - ["terraform", "init"]
+      - ["terraform", "destroy", "-var-file=variables.tfvars", "-auto-approve"]
+
   - name: Terraform destroy (shopizer-local)
     cwd: "${SHOPIZER_DIR}"
     run:

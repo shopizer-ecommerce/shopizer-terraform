@@ -9,13 +9,13 @@ pip install pyyaml requests
 
 ----
 
-python -u runbook_agent.py shopizer-local-runbook.yaml
+python -u runbook.py shopizer-local-runbook.yaml
 
 ----
 
 # cleanup runbook
 
-python -u runbook_agent.py shopizer-local-cleanup-runbook.yaml
+python -u runbook.py shopizer-local-cleanup-runbook.yaml
 
 
 ----

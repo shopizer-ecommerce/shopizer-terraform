@@ -34,7 +34,8 @@ steps:
 
   - name: Wait for ingress-nginx controller
     run:
-      - ["kubectl", "wait", "-n", "ingress-nginx", "--for=condition=Ready", "pod", "--selector=app.kubernetes.io/component=controller", "--timeout=120s"]
+      - ["kubectl", "rollout", "status", "-n", "ingress-nginx", "deployment/ingress-nginx-controller", "--timeout=180s"]
+      - ["kubectl", "wait", "-n", "ingress-nginx", "--for=condition=Ready", "pod", "--selector=app.kubernetes.io/component=controller", "--timeout=180s"]
 
   - name: Wait for ingress-nginx admission webhook endpoints
     run:
@@ -43,7 +44,7 @@ steps:
   - name: Apply Shopizer ingress
     cwd: "${SHOPIZER_DIR}"
     run:
-      - ["kubectl", "apply", "-f", "k8s/ingress/ingress.yaml"]
+      - ["sh","-lc","set -e; for i in {1..5}; do if kubectl apply -f k8s/ingress/ingress.yaml; then exit 0; fi; echo \"ingress apply failed, retrying... ($i/5)\"; sleep 5; done; exit 1"]
 
   - name: Verify ingress + Keycloak front URL
     run:
@@ -55,6 +56,11 @@ steps:
     run:
       - ["terraform", "init"]
       - ["terraform", "apply", "-var-file", "variables.tfvars", "-auto-approve"]
+
+  - name: Update app secret from Keycloak output
+    cwd: "${KEYCLOAK_DIR}"
+    run:
+      - ["sh","-lc","set -e; export SECRET=$(terraform output -raw shopizer_client_secret); python - <<'PY'\nimport os\nfrom pathlib import Path\nsecret = os.environ['SECRET']\npath = Path(r'${SHOPIZER_DIR}/k8s/app-secret.yaml')\ntext = path.read_text()\nlines = text.splitlines()\nfound = False\nfor i,l in enumerate(lines):\n    if l.strip().startswith('APPLICATION_CLIENT_SECRET:'):\n        indent = l[:len(l) - len(l.lstrip())]\n        lines[i] = f\"{indent}APPLICATION_CLIENT_SECRET: {secret}\"\n        found = True\n        break\nif not found:\n    raise SystemExit('APPLICATION_CLIENT_SECRET not found in app-secret.yaml')\npath.write_text(\"\\n\".join(lines) + \"\\n\")\nPY"]
 
   - name: Apply app secret to cluster
     cwd: "${SHOPIZER_DIR}"
