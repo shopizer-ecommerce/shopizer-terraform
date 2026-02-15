@@ -24,7 +24,28 @@ terraform apply -var-file variables.tfvars
 terraform destroy -var-file variables.tfvars
 ```
 
-## Post installation
+## Operations
+
+Collect pod errors from logs in selected namespaces and generate a markdown report:
+
+```
+cd shopizer-local
+./operations/pod-error-report.sh -n default,ingress-nginx -s 2h -t 1000
+```
+
+Reports are written to `shopizer-local/operations/reports/` by default.
+
+Hot redeploy a single microservice (build image, push to local registry, update deployment image, wait rollout):
+
+```
+cd shopizer-local
+./operations/hot-redeploy-service.sh \
+  -a /Users/carlsamson/Documents/dev/workspace/shopizer \
+  -s merchants \
+  -n default
+```
+
+## Post installation (when executed manually)
 
 Check that the ingress is ok
 
@@ -76,7 +97,8 @@ Debug -> port forward
 
 `
 ## Port forward the required service, assumes one remote debut at a time
-kubectl port-forward deployment/merchant 5005:5005
+kubectl port-forward deployment/references 5004:5004
+kubectl port-forward deployment/merchants 5005:5005
 kubectl port-forward deployment/shop 5008:5008
 kubectl port-forward deployment/users 5007:5007
 
@@ -172,24 +194,3 @@ password:pass
 
 kubectl exec -it pgadmin-d6959f9b8-9gnh7 -- psql -U postgres -d shop -c '\dx'
 
-
-## Keycloak
-
-See in ../keycloak
-
-
-## Services
-
-### OpenAPI
-
-- http://localhost/references/swagger-ui/index.html
-- http://localhost/merchant/swagger-ui/index.html
-
-
-http://localhost/keycloak/realms/master/protocol/openid-connect/auth?response_type=token&client_id=shopizer&redirect_uri=http%3A%2F%2Flocalhost%2Fmerchant%2Fswagger-ui%2Foauth2-redirect.html&scope=admin&state=VHVlIEp1biAyNCAyMDI1IDE1OjA3OjIxIEdNVC0wNDAwIChFYXN0ZXJuIERheWxpZ2h0IFRpbWUp
-
-http://localhost/keycloak/realms/master/protocol/openid-connect/auth
-
-http://localhost/keycloak/realms/master/protocol/openid-connect/token
-
-psql -U user --d db -c '\dx'

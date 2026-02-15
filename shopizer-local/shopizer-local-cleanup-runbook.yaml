@@ -2,6 +2,7 @@ name: shopizer-local-cleanup
 vars:
   SHOPIZER_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/shopizer-local
   KEYCLOAK_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/shopizer-local/keycloak
+  POSTGRES_DATA_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/postgres-data
   out_dir: .out
 
 steps:
@@ -48,3 +49,7 @@ steps:
     run:
       - ["rm", "-rf", ".terraform"]
       - ["rm", "-f", "terraform.tfstate", "terraform.tfstate.backup", "terraform.tfstate.d"]
+
+  - name: Clear persisted postgres host data (if exists)
+    run:
+      - ["sh", "-lc", "if [ -d \"${POSTGRES_DATA_DIR}\" ]; then rm -rf \"${POSTGRES_DATA_DIR}\"/* \"${POSTGRES_DATA_DIR}\"/.[!.]* \"${POSTGRES_DATA_DIR}\"/..?* 2>/dev/null || true; fi"]

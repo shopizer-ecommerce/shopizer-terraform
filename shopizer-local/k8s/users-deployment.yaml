@@ -70,7 +70,7 @@ spec:
                   name: app-secret
                   key: APPLICATION_CRYPTO_KEY
             - name: MERCHANT_URL
-              value: http://merchant
+              value: http://merchants
               #url to call from backend services
             - name: AUTH_URL
               value: http://keycloak.default.svc.cluster.local/keycloak

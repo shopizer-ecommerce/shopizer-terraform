@@ -11,4 +11,5 @@
 *.tfvars
 
 shopizer-local/k8s/keys/*
+shopizer-local/operations/reports/*
 postgres-data

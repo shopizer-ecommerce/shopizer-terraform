@@ -17,11 +17,11 @@ spec:
                 name: pgadmin
                 port:
                   number: 80
-          - path: /merchant
+          - path: /merchants
             pathType: Prefix
             backend:
               service:
-                name: merchant
+                name: merchants
                 port:
                   number: 80
           - path: /references

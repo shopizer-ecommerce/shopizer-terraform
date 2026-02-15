@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: merchant
+  name: merchants
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: merchant
+      app: merchants
   template:
     metadata:
       labels:
-        app: merchant
+        app: merchants
     spec:
       containers:
-        - name: merchant
-          image: localhost:5001/shopizer-merchant:latest
+        - name: merchants
+          image: localhost:5001/shopizer-merchants:latest
           env:
             - name: APPLICATION_DB_HOST
               valueFrom:
