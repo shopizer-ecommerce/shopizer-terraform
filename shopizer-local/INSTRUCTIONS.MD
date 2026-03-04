@@ -20,21 +20,6 @@ python -u runbook.py shopizer-local-cleanup-runbook.yaml
 
 ----
 
-# Create a wrapper
 
-cat > shopizer-agent <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-source .venv/bin/activate
-python runbook_agent.py "/Users/carlsamson/Documents/dev/workspace/shopizer/shopizer-assistant/shopizer-local-runbook.yaml"
-EOF
-chmod +x shopizer-agent
 
-----
 
-# raw runbook
-
-python runbook_agent.py "/Users/carlsamson/Documents/dev/workspace/shopizer/shopizer-assistant/shopizer-local-runbook.yaml"
-
-python -X faulthandler -u runbook_agent.py /Users/carlsamson/Documents/dev/workspace/shopizer/shopizer-assistant/shopizer-local.yaml
-echo $?

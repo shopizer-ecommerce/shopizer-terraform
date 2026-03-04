@@ -71,4 +71,4 @@ spec:
                 -XX:ReservedCodeCacheSize=64m
                 -XX:MaxDirectMemorySize=16m
                 -Xss256k
-                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5004
+#                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5004

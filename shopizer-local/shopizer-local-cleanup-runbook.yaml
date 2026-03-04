@@ -10,7 +10,7 @@ steps:
     cwd: "${KEYCLOAK_DIR}"
     run:
       - ["terraform", "init"]
-      - ["terraform", "destroy", "-var-file=variables.tfvars", "-auto-approve"]
+      - ["sh", "-lc", "set +e; out=$(terraform destroy -var-file=variables.tfvars -auto-approve 2>&1); rc=$?; echo \"$out\"; if [ $rc -eq 0 ]; then exit 0; fi; echo \"$out\" | grep -q 'error initializing keycloak provider' && echo \"$out\" | grep -q 'connect: connection refused' && { echo 'Warning: Keycloak unreachable during destroy; continuing cleanup.'; exit 0; }; exit $rc"]
 
   - name: Terraform destroy (shopizer-local)
     cwd: "${SHOPIZER_DIR}"
