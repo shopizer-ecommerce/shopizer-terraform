@@ -8,13 +8,17 @@
 - java 21
 
 
-Make sure you are using java 21
+Make sure you are using java 21, required for building images
 `
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 echo $JAVA_HOME
 java --version
 `
 
+# use the python runbook to deploy the cluster and hot deploy a service
+# see INSTRUCTIONS.MD
+
+# This is to run the installation manually (Use the runbook preferably)
 # Script execution
 
 ```

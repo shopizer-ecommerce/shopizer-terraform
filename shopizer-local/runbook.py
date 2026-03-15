@@ -12,6 +12,7 @@ from pathlib import Path
 import requests
 
 os.environ["TF_INPUT"] = "false"
+#OLLAMA is not required, not tested, future plan
 OLLAMA_URL = "http://localhost:11434/api/chat"
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.1")
 

@@ -67,6 +67,10 @@ steps:
     run:
       - ["kubectl", "apply", "-f", "k8s/app-secret.yaml"]
 
+  - name: Inject OPENAI_API_KEY from environment
+    run:
+      - ["sh","-lc","set -e; if [ -z \"${OPENAI_API_KEY:-}\" ]; then echo \"❌ OPENAI_API_KEY is not set. Export it before running the runbook.\"; exit 1; fi; kubectl patch secret app-secret -n ${NAMESPACE} --type merge -p \"{\\\"stringData\\\":{\\\"OPENAI_API_KEY\\\":\\\"$OPENAI_API_KEY\\\"}}\" >/dev/null; echo \"✅ OPENAI_API_KEY injected into secret/app-secret\""]
+
   - name: Restart users pod controller
     run:
       - ["kubectl", "rollout", "restart", "deploy/users", "-n", "${NAMESPACE}"]

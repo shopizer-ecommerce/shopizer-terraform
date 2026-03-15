@@ -12,7 +12,7 @@ Required:
 
 Options:
   -n, --namespace      Kubernetes namespace (default: default)
-  -r, --registry       Registry host (default: 127.0.0.1:5001)
+  -r, --registry       Registry host (default: localhost:5001)
   -t, --tag            Image tag (default: dev-<timestamp>)
   --full-build         Run root mvnw clean install before service build
   --skip-push          Build image but do not docker push
@@ -33,7 +33,7 @@ USAGE
 APP_PATH=""
 SERVICE=""
 NAMESPACE="default"
-REGISTRY="127.0.0.1:5001"
+REGISTRY="localhost:5001"
 TAG="dev-$(date +%Y%m%d-%H%M%S)"
 FULL_BUILD=0
 SKIP_PUSH=0
@@ -101,7 +101,9 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 
 APP_PATH="$(cd "$APP_PATH" && pwd)"
+echo "App path: $APP_PATH"
 SERVICE_DIR="$APP_PATH/$SERVICE"
+echo "Service directory: $SERVICE_DIR"
 
 if [[ ! -d "$SERVICE_DIR" ]]; then
   echo "Service directory not found: $SERVICE_DIR" >&2
@@ -121,6 +123,10 @@ fi
 if ! kubectl get deployment "$SERVICE" -n "$NAMESPACE" >/dev/null 2>&1; then
   echo "Deployment '$SERVICE' not found in namespace '$NAMESPACE'" >&2
   exit 1
+fi
+
+if [[ "$REGISTRY" == "127.0.0.1:5001" ]]; then
+  echo "Warning: registry '$REGISTRY' may fail in kind pull path. Prefer 'localhost:5001' for this cluster."
 fi
 
 IMAGE="$REGISTRY/shopizer-$SERVICE:$TAG"
