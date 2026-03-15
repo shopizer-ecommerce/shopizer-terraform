@@ -16,7 +16,7 @@ java --version
 `
 
 # use the python runbook to deploy the cluster and hot deploy a service
-# see INSTRUCTIONS.MD
+### see --> INSTRUCTIONS.MD <--
 
 # This is to run the installation manually (Use the runbook preferably)
 # Script execution
