@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Docker Desktop
+- Docker Desktop (recent version)
 - Terraform
 - Kubectl
 - java 21
@@ -14,6 +14,17 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 echo $JAVA_HOME
 java --version
 `
+
+You need a host resolution for keycloak frontend ingress to be working correctly and to anser on http://keycloak
+
+
+cat /etc/hosts
+
+`
+127.0.0.1 keycloak
+`
+
+
 
 # use the python runbook to deploy the cluster and hot deploy a service
 ### see --> INSTRUCTIONS.MD <--

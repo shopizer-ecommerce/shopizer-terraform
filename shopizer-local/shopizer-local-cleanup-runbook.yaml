@@ -22,6 +22,10 @@ steps:
     run:
       - ["sh","-lc","docker stop kind-registry terraform-kind-control-plane 2>/dev/null || true"]
 
+  - name: Free local registry port 5001
+    run:
+      - ["sh","-lc","pids=$(lsof -tiTCP:5001 -sTCP:LISTEN 2>/dev/null || true); if [ -z \"$pids\" ]; then echo 'No process listening on TCP port 5001.'; exit 0; fi; echo \"Stopping process(es) listening on TCP port 5001: $pids\"; kill $pids 2>/dev/null || true; sleep 2; remaining=$(lsof -tiTCP:5001 -sTCP:LISTEN 2>/dev/null || true); if [ -n \"$remaining\" ]; then echo \"Force killing process(es) still listening on TCP port 5001: $remaining\"; kill -9 $remaining 2>/dev/null || true; fi"]
+
   - name: Delete kind cluster
     run:
       - ["kind", "delete", "cluster"]

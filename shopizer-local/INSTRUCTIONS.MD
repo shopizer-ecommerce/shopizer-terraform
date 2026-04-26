@@ -9,8 +9,11 @@ pip install pyyaml requests
 
 ----
 
-# set OpenAI key only in shell env (do not commit to files)
+# set OpenAI key only in shell env (do not commit to files) 
+# This is for creating embeddings for product search
 export OPENAI_API_KEY='<your-openai-api-key>'
+
+# Next command orchestrates the terraform execution to run a knind cluster locally
 
 python -u runbook.py shopizer-local-runbook.yaml
 
@@ -23,7 +26,14 @@ python -u runbook.py shopizer-local-cleanup-runbook.yaml
 
 ----
 
-Hot redeploy a service (example shop)
+## Hot redeploy a service (example shop)
+
+## ##Patch secret (example )
+
+export OPENAI_API_KEY='...'
+
+kubectl patch secret app-secret -n default --type merge \
+  -p "{\"stringData\":{\"OPENAI_API_KEY\":\"$(printf %s "$OPENAI_API_KEY" | tr -d '\r\n')\"}}" 
 
 
 ./operations/hot-redeploy-service.sh \
@@ -31,12 +41,12 @@ Hot redeploy a service (example shop)
   -s shop 
   -n default
 
-Patch secret (example )
-kubectl patch secret app-secret -n default --type merge \
-  -p "{\"stringData\":{\"OPENAI_API_KEY\":\"$(printf %s "$OPENAI_API_KEY" | tr -d '\r\n')\"}}" 
+
 
 Verify
-kubectl get secret app-secret -n default -o jsonpath='{.data.OPENAI_API_KEY}' | base64 --decode | cat -vet
+# full value (be careful: prints secret to terminal/history)
+kubectl get secret app-secret -n default -o jsonpath='{.data.OPENAI_API_KEY}' | base64 --decode; echo
+
 
 
 

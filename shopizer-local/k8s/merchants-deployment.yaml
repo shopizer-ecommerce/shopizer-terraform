@@ -78,7 +78,7 @@ spec:
                 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
           ports:
             - containerPort: 8080
- #           - containerPort: 5005   # debug port
+            - containerPort: 5005   # debug port
           resources:
             requests:
               memory: 512Mi
