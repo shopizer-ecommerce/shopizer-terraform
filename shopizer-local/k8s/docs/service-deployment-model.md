@@ -182,6 +182,15 @@ entrypoints reference a chart in a sibling repository path, and Argo CD renders 
 single source checkout in isolation. The ApplicationSet uses Argo CD multi-source
 Helm instead, which supports chart and values from different repositories.
 
+The service ApplicationSet currently reads:
+
+```text
+shopizer-terraform branch: platform4.0
+microservices branch: platform
+```
+
+Both branches must be pushed for Argo CD to sync the service applications.
+
 Validate all Java services:
 
 ```bash

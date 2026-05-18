@@ -32,7 +32,7 @@ spec:
       project: default
       sources:
         - repoURL: https://github.com/shopizer-ecommerce/shopizer-terraform.git
-          targetRevision: HEAD
+          targetRevision: platform4.0
           path: shopizer-local/k8s/charts/generic-java-service
           helm:
             releaseName: '{{ .name }}'
@@ -40,7 +40,7 @@ spec:
               - $values/{{ .path }}/values/common.yaml
               - $values/{{ .path }}/values/local.yaml
         - repoURL: https://github.com/shopizer-ecommerce/microservices.git
-          targetRevision: HEAD
+          targetRevision: platform
           ref: values
       destination:
         server: https://kubernetes.default.svc

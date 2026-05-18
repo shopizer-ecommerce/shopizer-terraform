@@ -97,13 +97,11 @@ Shopizer services or monitoring components.
 Shopizer services still need Argo CD Applications/ApplicationSets that can render
 the service-owned Kustomize entrypoints.
 
-Monitoring still needs Argo CD Applications or Terraform/Helm resources for:
+Monitoring is deployed by:
 
 ```text
-jaeger
-kube-prometheus-stack
-opentelemetry-collector
-loki
-alloy
+k8s/argocd/applicationsets/observability.yaml
 ```
 
+It creates Argo CD Applications for Jaeger, kube-prometheus-stack,
+OpenTelemetry Collector, Loki, and Alloy in the `monitoring` namespace.

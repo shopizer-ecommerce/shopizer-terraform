@@ -9,14 +9,14 @@ spec:
   project: default
   sources:
     - repoURL: https://github.com/shopizer-ecommerce/shopizer-terraform.git
-      targetRevision: HEAD
+      targetRevision: platform4.0
       path: shopizer-local/k8s/platform/charts/cilium
       helm:
         releaseName: cilium
         valueFiles:
           - $values/shopizer-local/k8s/platform/values/local/values-cilium.yaml
     - repoURL: https://github.com/shopizer-ecommerce/shopizer-terraform.git
-      targetRevision: HEAD
+      targetRevision: platform4.0
       ref: values
   destination:
     server: https://kubernetes.default.svc

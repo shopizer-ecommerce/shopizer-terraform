@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: observability
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: platform
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - list:
+        elements:
+          - name: monitoring
+            releaseName: monitoring
+            chartPath: kube-prometheus-stack
+            valuesFile: kube-prometheus-stack-values.yaml
+          - name: jaeger
+            releaseName: jaeger
+            chartPath: jaeger
+            valuesFile: jaeger-values.yaml
+          - name: loki
+            releaseName: loki
+            chartPath: loki
+            valuesFile: loki-values.yaml
+          - name: otel-collector
+            releaseName: otel-collector
+            chartPath: opentelemetry-collector
+            valuesFile: otel-collector-values.yaml
+          - name: alloy
+            releaseName: alloy
+            chartPath: alloy
+            valuesFile: alloy-values.yaml
+  template:
+    metadata:
+      name: '{{ .name }}'
+      labels:
+        app.kubernetes.io/part-of: platform
+        app.kubernetes.io/component: observability
+    spec:
+      project: default
+      sources:
+        - repoURL: https://github.com/shopizer-ecommerce/shopizer-terraform.git
+          targetRevision: platform4.0
+          path: shopizer-local/k8s/platform/charts/{{ .chartPath }}
+          helm:
+            releaseName: '{{ .releaseName }}'
+            valueFiles:
+              - $values/shopizer-local/k8s/platform/values/local/{{ .valuesFile }}
+        - repoURL: https://github.com/shopizer-ecommerce/shopizer-terraform.git
+          targetRevision: platform4.0
+          ref: values
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: monitoring
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
