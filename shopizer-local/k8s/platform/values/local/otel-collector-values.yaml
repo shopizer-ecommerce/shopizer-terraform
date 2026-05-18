@@ -28,7 +28,7 @@ config:
       endpoint: jaeger.monitoring.svc.cluster.local:4317
       tls:
         insecure: true
-      extensions:
+  extensions:
     health_check:
       endpoint: ${env:MY_POD_IP}:13133
   processors:
