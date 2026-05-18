@@ -1,0 +1,54 @@
+name: generic-java-service
+replicaCount: 1
+
+image:
+  repository: example/generic-java-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ports:
+  http: 8080
+  debug: null
+
+resources: {}
+
+otel:
+  enabled: true
+  configMapName: otel-common-env
+
+secretName: app-secret
+secretEnv: []
+plainEnv: []
+extraEnv: []
+
+javaToolOptions: ""
+
+configMap:
+  enabled: false
+  data: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 80
+
+serviceMonitor:
+  enabled: false
+  labels: {}
+  interval: 30s
+  path: /actuator/prometheus
+  port: http

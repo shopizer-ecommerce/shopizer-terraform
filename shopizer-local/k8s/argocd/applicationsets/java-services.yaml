@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: java-services
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: shopizer
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - list:
+        elements:
+          - name: shop
+            path: shop
+          - name: users
+            path: users
+          - name: orders
+            path: orders
+          - name: merchants
+            path: merchants
+          - name: references
+            path: references
+  template:
+    metadata:
+      name: '{{ .name }}'
+      labels:
+        app.kubernetes.io/part-of: shopizer
+        app.kubernetes.io/component: java-service
+    spec:
+      project: default
+      sources:
+        - repoURL: https://github.com/shopizer-ecommerce/shopizer-terraform.git
+          targetRevision: HEAD
+          path: shopizer-local/k8s/charts/generic-java-service
+          helm:
+            releaseName: '{{ .name }}'
+            valueFiles:
+              - $values/{{ .path }}/values/common.yaml
+              - $values/{{ .path }}/values/local.yaml
+        - repoURL: https://github.com/shopizer-ecommerce/microservices.git
+          targetRevision: HEAD
+          ref: values
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false
+          - ServerSideApply=true

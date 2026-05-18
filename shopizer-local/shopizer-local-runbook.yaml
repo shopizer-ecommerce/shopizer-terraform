@@ -1,55 +1,113 @@
 name: shopizer-local
 vars:
-  SHOPIZER_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/shopizer-local
-  KEYCLOAK_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform//shopizer-local/keycloak
+  SHOPIZER_DIR: ${SHOPIZER_DIR}
+  KEYCLOAK_DIR: /Users/ioannislafiotis/Desktop/playground/shopizer-terraform/shopizer-local/keycloak
   NAMESPACE: default
   #create an entry inthe host fie resolving 127.0.0.1 to keycloak
-  KEYCLOAK_FRONT_URL: http://keycloak/keycloak
+  KEYCLOAK_FRONT_URL: http://keycloak
   out_dir: .out
 
 steps:
+  # - name: Preflight
+  #   run:
+  #     #      - [
+  #     #          "sh",
+  #     #          "-lc",
+  #     #          "set -e; if [ -x /Users/ioannislafiotis/.sdkman/candidates/java/21.0.10-amzn/bin/java ]; then export JAVA_HOME=$(/Users/ioannislafiotis/.sdkman/candidates/java/current -v 21); fi; java -version 2>&1 | head -n 1; major=$(java -XshowSettings:properties -version 2>&1 | awk '/java.specification.version/{print $NF}' | cut -d. -f1); if [ -z \"$major\" ] || [ \"$major\" -lt 21 ]; then echo \"❌ Java 21 required. Run: export JAVA_HOME=\\$(/Users/ioannislafiotis/.sdkman/candidates/java/current -v 21)\"; exit 1; else echo \"✅ Java $major detected\"; fi",
+  #
+  #     #        ]
+  #     - ["docker", "info"]
+  #     - ["kubectl", "version", "--client"]
+  #     - ["terraform", "version"]
   - name: Preflight
     run:
-      - ["sh","-lc","set -e; if [ -x /usr/libexec/java_home ]; then export JAVA_HOME=$(/usr/libexec/java_home -v 21); fi; java -version 2>&1 | head -n 1; major=$(java -XshowSettings:properties -version 2>&1 | awk '/java.specification.version/{print $NF}' | cut -d. -f1); if [ -z \"$major\" ] || [ \"$major\" -lt 21 ]; then echo \"❌ Java 21 required. Run: export JAVA_HOME=\\$(/usr/libexec/java_home -v 21)\"; exit 1; else echo \"✅ Java $major detected\"; fi"]
-      - ["docker", "info"]
-      - ["kubectl", "version", "--client"]
-      - ["terraform", "version"]
-
-  - name: Terraform shopizer init/plan/apply
-    cwd: "${SHOPIZER_DIR}"
-    run:
-      - ["terraform", "init", "-upgrade"]
-      - ["terraform", "validate"]
-      - ["terraform", "plan", "-var-file=variables.tfvars", "-out=tfplan"]
-      - ["terraform", "apply", "-auto-approve", "tfplan"]
-
-
-  - name: Wait for Kubernetes API to respond
-    run:
-      - ["kubectl", "cluster-info"]
-
-  - name: Wait for nodes ready
-    run:
-      - ["kubectl", "wait", "--for=condition=Ready", "nodes", "--all", "--timeout=180s"]
+      - ["python3", "doctor.py"]
+  #  - name: Terraform shopizer init/plan/apply
+  #    cwd: "${SHOPIZER_DIR}"
+  #    run:
+  #    #  - ["terraform", "init", "-upgrade"]
+  #    #  - ["terraform", "validate"]
+  #    #  - ["terraform", "plan", "-var-file=variables.tfvars", "-out=tfplan"]
+  #    #  - ["terraform", "apply", "-auto-approve", "tfplan"]
+  #
+  #  - name: Wait for Kubernetes API to respond
+  #    run:
+  #      - ["kubectl", "cluster-info"]
+  #
+  #  - name: Wait for nodes ready
+  #    run:
+  # - [
+  #     "kubectl",
+  #     "wait",
+  #     "--for=condition=Ready",
+  #     "nodes",
+  #     "--all",
+  #     "--timeout=180s",
+  #   ]
 
   - name: Wait for ingress-nginx controller
     run:
-      - ["kubectl", "rollout", "status", "-n", "ingress-nginx", "deployment/ingress-nginx-controller", "--timeout=180s"]
-      - ["kubectl", "wait", "-n", "ingress-nginx", "--for=condition=Ready", "pod", "--selector=app.kubernetes.io/component=controller", "--timeout=180s"]
+      #     # - ["kubectl", "create", "namespace", "ingress-nginx"]
+      #     # - ["kubectl", "create", "-f", "k8s/platform/manifests/ingress/ingress.yaml"]
+      #     - [
+      #         "kubectl",
+      #         "rollout",
+      #         "status",
+      #         "deployment/ingress-nginx-controller",
+      #         "-n",
+      #         "ingress-nginx",
+      #       ]
+      - [
+          "kubectl",
+          "apply",
+          "-f",
+          "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml",
+        ]
+  #     - [
+  #         "kubectl",
+  #         "rollout",
+  #         "status",
+  #         "-n",
+  #         "ingress-nginx",
+  #         "deployment/ingress-nginx-controller",
+  #         "--timeout=180s",
+  #       ]
+  #     - [
+  #         "kubectl",
+  #         "wait",
+  #         "-n",
+  #         "ingress-nginx",
+  #         "--for=condition=Ready",
+  #         "pod",
+  #         "--selector=app.kubernetes.io/component=controller",
+  #         "--timeout=180s",
+  #       ]
 
   - name: Wait for ingress-nginx admission webhook endpoints
     run:
-      - ["sh","-lc","set -e; for i in {1..30}; do eps=$(kubectl get endpoints -n ingress-nginx ingress-nginx-controller-admission -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null || true); if [ -n \"$eps\" ]; then echo \"admission endpoints: $eps\"; exit 0; fi; echo \"waiting for admission endpoints... ($i/30)\"; sleep 5; done; echo \"admission endpoints not ready\"; exit 1"]
+      - [
+          "sh",
+          "-lc",
+          'set -e; for i in {1..30}; do eps=$(kubectl get endpoints -n ingress-nginx ingress-nginx-controller-admission -o jsonpath=''{.subsets[*].addresses[*].ip}'' 2>/dev/null || true); if [ -n "$eps" ]; then echo "admission endpoints: $eps"; exit 0; fi; echo "waiting for admission endpoints... ($i/30)"; sleep 5; done; echo "admission endpoints not ready"; exit 1',
+        ]
 
   - name: Apply Shopizer ingress
     cwd: "${SHOPIZER_DIR}"
     run:
-      - ["sh","-lc","set -e; for i in {1..5}; do if kubectl apply -f k8s/ingress/ingress.yaml; then exit 0; fi; echo \"ingress apply failed, retrying... ($i/5)\"; sleep 5; done; exit 1"]
+      - [
+          "sh",
+          "-lc",
+          'set -e; for i in {1..5}; do if kubectl apply -f k8s/platform/manifests/ingress/ingress.yaml; then exit 0; fi; echo "ingress apply failed, retrying... ($i/5)"; sleep 5; done; exit 1',
+        ]
 
   - name: Verify ingress + Keycloak front URL
     run:
       - ["kubectl", "get", "ingress", "-A", "-o", "wide"]
-      - ["sh","-lc","set -e; for i in {1..20}; do if curl -fsS \"${KEYCLOAK_FRONT_URL}\" >/dev/null; then echo \"✅ Keycloak reachable: ${KEYCLOAK_FRONT_URL}\"; exit 0; fi; echo \"waiting for Keycloak URL... ($i/20)\"; sleep 5; done; echo \"❌ Keycloak not reachable: ${KEYCLOAK_FRONT_URL}\"; exit 1"]
+      - [
+          "sh",
+          "-lc",
+          'set -e; for i in {1..20}; do if curl -fsS "${KEYCLOAK_FRONT_URL}" >/dev/null; then echo "✅ Keycloak reachable: ${KEYCLOAK_FRONT_URL}"; exit 0; fi; echo "waiting for Keycloak URL... ($i/20)"; sleep 5; done; echo "❌ Keycloak not reachable: ${KEYCLOAK_FRONT_URL}"; exit 1',
+        ]
 
   - name: Keycloak terraform apply
     cwd: "${KEYCLOAK_DIR}"
@@ -60,16 +118,24 @@ steps:
   - name: Update app secret from Keycloak output
     cwd: "${KEYCLOAK_DIR}"
     run:
-      - ["sh","-lc","set -e; export SECRET=$(terraform output -raw shopizer_client_secret); python - <<'PY'\nimport os\nfrom pathlib import Path\nsecret = os.environ['SECRET']\npath = Path(r'${SHOPIZER_DIR}/k8s/app-secret.yaml')\ntext = path.read_text()\nlines = text.splitlines()\nfound = False\nfor i,l in enumerate(lines):\n    if l.strip().startswith('APPLICATION_CLIENT_SECRET:'):\n        indent = l[:len(l) - len(l.lstrip())]\n        lines[i] = f\"{indent}APPLICATION_CLIENT_SECRET: {secret}\"\n        found = True\n        break\nif not found:\n    raise SystemExit('APPLICATION_CLIENT_SECRET not found in app-secret.yaml')\npath.write_text(\"\\n\".join(lines) + \"\\n\")\nPY"]
+      - [
+          "sh",
+          "-lc",
+          "set -e; export SECRET=$(terraform output -raw shopizer_client_secret); python - <<'PY'\nimport os\nfrom pathlib import Path\nsecret = os.environ['SECRET']\npath = Path(r'${SHOPIZER_DIR}/k8s/apps/shared/app-secret.yaml')\ntext = path.read_text()\nlines = text.splitlines()\nfound = False\nfor i,l in enumerate(lines):\n    if l.strip().startswith('APPLICATION_CLIENT_SECRET:'):\n        indent = l[:len(l) - len(l.lstrip())]\n        lines[i] = f\"{indent}APPLICATION_CLIENT_SECRET: {secret}\"\n        found = True\n        break\nif not found:\n    raise SystemExit('APPLICATION_CLIENT_SECRET not found in app-secret.yaml')\npath.write_text(\"\\n\".join(lines) + \"\\n\")\nPY",
+        ]
 
   - name: Apply app secret to cluster
     cwd: "${SHOPIZER_DIR}"
     run:
-      - ["kubectl", "apply", "-f", "k8s/app-secret.yaml"]
+      - ["kubectl", "apply", "-f", "k8s/apps/shared/app-secret.yaml"]
 
   - name: Inject OPENAI_API_KEY from environment
     run:
-      - ["sh","-lc","set -e; if [ -z \"${OPENAI_API_KEY:-}\" ]; then echo \"❌ OPENAI_API_KEY is not set. Export it before running the runbook.\"; exit 1; fi; kubectl patch secret app-secret -n ${NAMESPACE} --type merge -p \"{\\\"stringData\\\":{\\\"OPENAI_API_KEY\\\":\\\"$OPENAI_API_KEY\\\"}}\" >/dev/null; echo \"✅ OPENAI_API_KEY injected into secret/app-secret\""]
+      - [
+          "sh",
+          "-lc",
+          "set -e; if [ -z \"${OPENAI_API_KEY:-}\" ]; then echo \"❌ OPENAI_API_KEY is not set. Export it before running the runbook.\"; exit 1; fi; kubectl patch secret app-secret -n ${NAMESPACE} --type merge -p \"{\\\"stringData\\\":{\\\"OPENAI_API_KEY\\\":\\\"$OPENAI_API_KEY\\\"}}\" >/dev/null; echo \"✅ OPENAI_API_KEY injected into secret/app-secret\"",
+        ]
 
   - name: Restart users pod controller
     run:
@@ -78,22 +144,66 @@ steps:
   - name: Collect diagnostics
     cwd: "${SHOPIZER_DIR}"
     run:
-      - ["sh","-lc","set -e; mkdir -p .out/diag .out/logs/${NAMESPACE} .out/logs/ingress-nginx .out/describe/${NAMESPACE} .out/describe/ingress-nginx"]
-      - ["sh","-lc","kubectl config current-context > .out/diag/kube_context.txt 2>&1 || true"]
-      - ["sh","-lc","kubectl get nodes -o wide > .out/diag/nodes.txt 2>&1 || true"]
-      - ["sh","-lc","kubectl get pods -A -o wide > .out/diag/pods_all.txt 2>&1 || true"]
-      - ["sh","-lc","kubectl get svc -A -o wide > .out/diag/svc_all.txt 2>&1 || true"]
-      - ["sh","-lc","kubectl get ingress -A -o wide > .out/diag/ingress_all.txt 2>&1 || true"]
-      - ["sh","-lc","kubectl get events -A --sort-by=.lastTimestamp > .out/diag/events_all.txt 2>&1 || true"]
+      - [
+          "sh",
+          "-lc",
+          "set -e; mkdir -p .out/diag .out/logs/${NAMESPACE} .out/logs/ingress-nginx .out/describe/${NAMESPACE} .out/describe/ingress-nginx",
+        ]
+      - [
+          "sh",
+          "-lc",
+          "kubectl config current-context > .out/diag/kube_context.txt 2>&1 || true",
+        ]
+      - [
+          "sh",
+          "-lc",
+          "kubectl get nodes -o wide > .out/diag/nodes.txt 2>&1 || true",
+        ]
+      - [
+          "sh",
+          "-lc",
+          "kubectl get pods -A -o wide > .out/diag/pods_all.txt 2>&1 || true",
+        ]
+      - [
+          "sh",
+          "-lc",
+          "kubectl get svc -A -o wide > .out/diag/svc_all.txt 2>&1 || true",
+        ]
+      - [
+          "sh",
+          "-lc",
+          "kubectl get ingress -A -o wide > .out/diag/ingress_all.txt 2>&1 || true",
+        ]
+      - [
+          "sh",
+          "-lc",
+          "kubectl get events -A --sort-by=.lastTimestamp > .out/diag/events_all.txt 2>&1 || true",
+        ]
 
       # Logs: default namespace (last 30m)
-      - ["sh","-lc","for p in $(kubectl get pod -n ${NAMESPACE} -o name 2>/dev/null); do kubectl logs -n ${NAMESPACE} --all-containers --since=30m $p > .out/logs/default/${p#pod/}.log 2>&1 || true; done"]
+      - [
+          "sh",
+          "-lc",
+          "for p in $(kubectl get pod -n ${NAMESPACE} -o name 2>/dev/null); do kubectl logs -n ${NAMESPACE} --all-containers --since=30m $p > .out/logs/default/${p#pod/}.log 2>&1 || true; done",
+        ]
 
       # Logs: ingress-nginx (last 30m)
-      - ["sh","-lc","for p in $(kubectl get pod -n ingress-nginx -o name 2>/dev/null); do kubectl logs -n ingress-nginx --all-containers --since=30m $p > .out/logs/ingress-nginx/${p#pod/}.log 2>&1 || true; done"]
+      - [
+          "sh",
+          "-lc",
+          "for p in $(kubectl get pod -n ingress-nginx -o name 2>/dev/null); do kubectl logs -n ingress-nginx --all-containers --since=30m $p > .out/logs/ingress-nginx/${p#pod/}.log 2>&1 || true; done",
+        ]
 
       # Describe non-running pods (default)
-      - ["sh","-lc","kubectl get pods -n ${NAMESPACE} --no-headers 2>/dev/null | awk '$3!=\"Running\" && $3!=\"Completed\"{print $1}' | while read p; do kubectl describe pod -n ${NAMESPACE} $p > .out/describe/${NAMESPACE}/$p.describe.txt 2>&1 || true; done"]
+      - [
+          "sh",
+          "-lc",
+          'kubectl get pods -n ${NAMESPACE} --no-headers 2>/dev/null | awk ''$3!="Running" && $3!="Completed"{print $1}'' | while read p; do kubectl describe pod -n ${NAMESPACE} $p > .out/describe/${NAMESPACE}/$p.describe.txt 2>&1 || true; done',
+        ]
 
       # Describe non-running pods (ingress-nginx)
-      - ["sh","-lc","kubectl get pods -n ingress-nginx --no-headers 2>/dev/null | awk '$3!=\"Running\" && $3!=\"Completed\"{print $1}' | while read p; do kubectl describe pod -n ingress-nginx $p > .out/describe/ingress-nginx/$p.describe.txt 2>&1 || true; done"]
+      - [
+          "sh",
+          "-lc",
+          'kubectl get pods -n ingress-nginx --no-headers 2>/dev/null | awk ''$3!="Running" && $3!="Completed"{print $1}'' | while read p; do kubectl describe pod -n ingress-nginx $p > .out/describe/ingress-nginx/$p.describe.txt 2>&1 || true; done',
+        ]

@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cilium
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: platform
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/shopizer-ecommerce/shopizer-terraform.git
+      targetRevision: HEAD
+      path: shopizer-local/k8s/platform/charts/cilium
+      helm:
+        releaseName: cilium
+        valueFiles:
+          - $values/shopizer-local/k8s/platform/values/local/values-cilium.yaml
+    - repoURL: https://github.com/shopizer-ecommerce/shopizer-terraform.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true

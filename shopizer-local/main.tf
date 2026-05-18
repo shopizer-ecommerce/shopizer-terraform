@@ -120,15 +120,31 @@ resource "null_resource" "deploy_manifests" {
   depends_on = [null_resource.load_images_into_kind]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ./k8s"
+    command = "kubectl apply -f ./k8s/apps/shared"
+  }
+
+  triggers = {
+    app_secret_sha  = filesha256("${path.module}/k8s/apps/shared/app-secret.yaml")
+    otel_config_sha = filesha256("${path.module}/k8s/apps/shared/otel-config-map.yaml")
+  }
+}
+
+resource "null_resource" "verify_shared_app_manifests" {
+  depends_on = [null_resource.deploy_manifests]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      kubectl get secret app-secret -n default
+      kubectl get configmap otel-common-env -n default
+    EOT
   }
 }
 
 resource "null_resource" "deploy_postgres" {
-  depends_on = [null_resource.load_images_into_kind]
+  depends_on = [null_resource.load_images_into_kind, null_resource.verify_shared_app_manifests]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ./k8s/postgres"
+    command = "kubectl apply -f ./k8s/platform/manifests/postgres"
   }
 }
 
@@ -136,7 +152,7 @@ resource "null_resource" "deploy_pgadmin" {
   depends_on = [null_resource.deploy_postgres]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ./k8s/pgadmin"
+    command = "kubectl apply -f ./k8s/platform/manifests/pgadmin"
   }
 }
 
@@ -144,14 +160,14 @@ resource "null_resource" "deploy_keycloak" {
   depends_on = [null_resource.deploy_postgres]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ./k8s/keycloak"
+    command = "kubectl apply -f ./k8s/platform/manifests/keycloak"
   }
 }
 
 resource "null_resource" "redis" {
   depends_on = [null_resource.deploy_postgres]
   provisioner "local-exec" {
-    command = "kubectl apply -f ./k8s/redis"
+    command = "kubectl apply -f ./k8s/platform/manifests/redis"
   }
 }
 
@@ -162,8 +178,103 @@ resource "null_resource" "deploy_ingress_nginx" {
   provisioner "local-exec" {
     command = "kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml"
   }
+
+  triggers = {
+    always_run = timestamp()
+  }
 }
 
+resource "null_resource" "verify_ingress_admission" {
+  depends_on = [null_resource.deploy_ingress_nginx]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      kubectl rollout status deployment/ingress-nginx-controller \
+        -n ingress-nginx \
+        --timeout 180s
+
+      kubectl wait job/ingress-nginx-admission-create \
+        -n ingress-nginx \
+        --for=condition=complete \
+        --timeout 180s
+
+      kubectl wait job/ingress-nginx-admission-patch \
+        -n ingress-nginx \
+        --for=condition=complete \
+        --timeout 180s
+
+      kubectl get secret ingress-nginx-admission -n ingress-nginx
+      kubectl get validatingwebhookconfiguration ingress-nginx-admission
+
+      for i in $(seq 1 30); do
+        endpoints=$(kubectl get endpoints ingress-nginx-controller-admission \
+          -n ingress-nginx \
+          -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null || true)
+
+        if [ -n "$endpoints" ]; then
+          echo "ingress-nginx admission endpoints: $endpoints"
+          exit 0
+        fi
+
+        echo "waiting for ingress-nginx admission endpoints... ($i/30)"
+        sleep 5
+      done
+
+      echo "ingress-nginx admission endpoints not ready"
+      exit 1
+    EOT
+  }
+}
+
+resource "null_resource" "install_argocd" {
+  count = var.enable_argocd ? 1 : 0
+
+  depends_on = [null_resource.create_kind_cluster, null_resource.verify_ingress_admission]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      if ! command -v helm >/dev/null 2>&1; then
+        echo "helm is required to install Argo CD"
+        exit 1
+      fi
+
+      helm upgrade --install ${var.argocd_release_name} ./k8s/platform/charts/argo-cd \
+        --namespace ${var.argocd_namespace} \
+        --create-namespace \
+        --values ./k8s/platform/values/local/argocd-values.yaml \
+        --wait \
+        --timeout 10m
+
+      kubectl rollout status deployment/argocd-server \
+        --namespace ${var.argocd_namespace} \
+        --timeout 5m
+    EOT
+  }
+
+  triggers = {
+    release_name = var.argocd_release_name
+    namespace    = var.argocd_namespace
+    values_sha   = filesha256("${path.module}/k8s/platform/values/local/argocd-values.yaml")
+    chart_sha    = filesha256("${path.module}/k8s/platform/charts/argo-cd/Chart.yaml")
+  }
+}
+
+resource "null_resource" "apply_argocd_applications" {
+  count = var.enable_argocd ? 1 : 0
+
+  depends_on = [null_resource.install_argocd]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -R -f ./k8s/argocd"
+  }
+
+  triggers = {
+    argocd_manifests_sha = sha256(join("", [
+      for file in fileset(path.module, "k8s/argocd/**/*.yaml") :
+      filesha256("${path.module}/${file}")
+    ]))
+  }
+}
 
 resource "null_resource" "delete_kind_cluster" {
   triggers = {
@@ -183,8 +294,3 @@ resource "null_resource" "delete_kind_cluster" {
     EOT
   }
 }
-
-
-
-
-

@@ -1,0 +1,211 @@
+common:
+  exampleValue: common-chart
+  global:
+    imageRegistry: null
+commonAnnotations: {}
+commonLabels: {}
+esIndexCleaner:
+  affinity: {}
+  annotations: {}
+  cmdlineParams: {}
+  concurrencyPolicy: Forbid
+  enabled: false
+  extraConfigmapMounts: []
+  extraEnv: []
+  extraSecretMounts: []
+  failedJobsHistoryLimit: 3
+  image:
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    registry: ""
+    repository: jaegertracing/jaeger-es-index-cleaner
+    tag: ""
+  nodeSelector: {}
+  numberOfDays: 7
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext:
+    runAsUser: 1000
+  resources: {}
+  schedule: 55 23 * * *
+  securityContext:
+    runAsUser: 1000
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: false
+    create: true
+    name: null
+  successfulJobsHistoryLimit: 3
+  tolerations: []
+esLookback:
+  affinity: {}
+  annotations: {}
+  cmdlineParams: {}
+  concurrencyPolicy: Forbid
+  enabled: false
+  extraConfigmapMounts: []
+  extraEnv:
+    - name: UNIT
+      value: days
+    - name: UNIT_COUNT
+      value: "7"
+  extraSecretMounts: []
+  failedJobsHistoryLimit: 3
+  image:
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    registry: ""
+    repository: jaegertracing/jaeger-es-rollover
+    tag: ""
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext:
+    runAsUser: 1000
+  resources: {}
+  schedule: 5 0 * * *
+  securityContext: {}
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: false
+    create: true
+    name: null
+  successfulJobsHistoryLimit: 3
+  tolerations: []
+esRollover:
+  affinity: {}
+  annotations: {}
+  cmdlineParams: {}
+  concurrencyPolicy: Forbid
+  enabled: false
+  extraConfigmapMounts: []
+  extraEnv:
+    - name: CONDITIONS
+      value: '{"max_age": "1d"}'
+  extraSecretMounts: []
+  failedJobsHistoryLimit: 3
+  image:
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    registry: ""
+    repository: jaegertracing/jaeger-es-rollover
+    tag: ""
+  initHook:
+    annotations: {}
+    extraEnv: []
+    podAnnotations: {}
+    podLabels: {}
+    ttlSecondsAfterFinished: 120
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext:
+    runAsUser: 1000
+  resources: {}
+  schedule: 10 0 * * *
+  securityContext: {}
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: false
+    create: true
+    name: null
+  successfulJobsHistoryLimit: 3
+  tolerations: []
+extraObjects: []
+fullnameOverride: ""
+global:
+  imageRegistry: null
+jaeger:
+  affinity: {}
+  args: []
+  enabled: true
+  extraEnv: []
+  image:
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    registry: ""
+    repository: jaegertracing/jaeger
+    tag: ""
+  ingress:
+    annotations: {}
+    enabled: false
+    labels: {}
+    pathType: null
+  nodeSelector: {}
+  podSecurityContext:
+    fsGroup: 10001
+    runAsGroup: 10001
+    runAsUser: 10001
+  replicas: 1
+  securityContext: {}
+  service:
+    annotations: {}
+    extraPorts: []
+    labels: {}
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+  tolerations: []
+  topologySpreadContraints: []
+nameOverride: ""
+networkPolicy:
+  enabled: false
+spark:
+  affinity: {}
+  annotations: {}
+  cmdlineParams: {}
+  concurrencyPolicy: Forbid
+  enabled: false
+  extraConfigmapMounts: []
+  extraEnv: []
+  extraSecretMounts: []
+  failedJobsHistoryLimit: 5
+  image:
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    registry: ""
+    repository: jaegertracing/spark-dependencies
+    tag: latest
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext: {}
+  resources: {}
+  schedule: 49 23 * * *
+  securityContext: {}
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: false
+    create: true
+    name: null
+  successfulJobsHistoryLimit: 5
+  tolerations: []
+storage:
+  cassandra:
+    cmdlineParams: {}
+    extraEnv: []
+    host: cassandra
+    keyspace: jaeger_v1_test
+    password: password
+    port: 9042
+    tls:
+      enabled: false
+      secretName: cassandra-tls-secret
+    usePassword: true
+    user: user
+  elasticsearch:
+    tls:
+      enabled: false
+      mountPath: ""
+      secretName: ""
+      subPath: ""
+    url: http://elasticsearch-master:9200
+  type: elasticsearch
+tag: ""
+uiconfig: null
+userconfig: null

@@ -1,8 +1,8 @@
 name: shopizer-local-cleanup
 vars:
-  SHOPIZER_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/shopizer-local
-  KEYCLOAK_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/shopizer-local/keycloak
-  POSTGRES_DATA_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/postgres-data
+  SHOPIZER_DIR: /Users/ioannislafiotis/Desktop/playground/shopizer-terraform/shopizer-local
+  KEYCLOAK_DIR: /Users/ioannislafiotis/Desktop/playground/shopizer-terraform/shopizer-local/keycloak
+  POSTGRES_DATA_DIR: /Users/ioannislafiotis/Desktop/playground/shopizer-terraform/postgres-data
   out_dir: .out
 
 steps:
@@ -10,7 +10,11 @@ steps:
     cwd: "${KEYCLOAK_DIR}"
     run:
       - ["terraform", "init"]
-      - ["sh", "-lc", "set +e; out=$(terraform destroy -var-file=variables.tfvars -auto-approve 2>&1); rc=$?; echo \"$out\"; if [ $rc -eq 0 ]; then exit 0; fi; echo \"$out\" | grep -q 'error initializing keycloak provider' && echo \"$out\" | grep -q 'connect: connection refused' && { echo 'Warning: Keycloak unreachable during destroy; continuing cleanup.'; exit 0; }; exit $rc"]
+      - [
+          "sh",
+          "-lc",
+          'set +e; out=$(terraform destroy -var-file=variables.tfvars -auto-approve 2>&1); rc=$?; echo "$out"; if [ $rc -eq 0 ]; then exit 0; fi; echo "$out" | grep -q ''error initializing keycloak provider'' && echo "$out" | grep -q ''connect: connection refused'' && { echo ''Warning: Keycloak unreachable during destroy; continuing cleanup.''; exit 0; }; exit $rc',
+        ]
 
   - name: Terraform destroy (shopizer-local)
     cwd: "${SHOPIZER_DIR}"
@@ -20,11 +24,11 @@ steps:
 
   - name: Stop local registry / kind containers
     run:
-      - ["sh","-lc","docker stop kind-registry terraform-kind-control-plane 2>/dev/null || true"]
-
-  - name: Free local registry port 5001
-    run:
-      - ["sh","-lc","pids=$(lsof -tiTCP:5001 -sTCP:LISTEN 2>/dev/null || true); if [ -z \"$pids\" ]; then echo 'No process listening on TCP port 5001.'; exit 0; fi; echo \"Stopping process(es) listening on TCP port 5001: $pids\"; kill $pids 2>/dev/null || true; sleep 2; remaining=$(lsof -tiTCP:5001 -sTCP:LISTEN 2>/dev/null || true); if [ -n \"$remaining\" ]; then echo \"Force killing process(es) still listening on TCP port 5001: $remaining\"; kill -9 $remaining 2>/dev/null || true; fi"]
+      - [
+          "sh",
+          "-lc",
+          "docker stop kind-registry terraform-kind-control-plane 2>/dev/null || true",
+        ]
 
   - name: Delete kind cluster
     run:
@@ -32,28 +36,52 @@ steps:
 
   - name: Remove buildpack/kind/registry images
     run:
-      - ["sh","-lc","docker images --format \"{{.Repository}}:{{.Tag}} {{.ID}}\" | grep \"^127.0.0.1:5001/shopizer-\" | awk '{print $2}' | xargs -r docker rmi -f"]
-      - ["sh","-lc","docker images --format \"{{.Repository}}:{{.Tag}} {{.ID}}\" | grep \"^paketobuildpacks\" | awk '{print $2}' | xargs -r docker rmi"]
-      - ["sh","-lc","docker rmi -f $(docker images kindest/node -q) || true"]
-      - ["sh","-lc","docker rmi -f $(docker images registry -q) || true"]
+      - [
+          "sh",
+          "-lc",
+          'docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "^127.0.0.1:5001/shopizer-" | awk ''{print $2}'' | xargs -r docker rmi -f',
+        ]
+      - [
+          "sh",
+          "-lc",
+          'docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "^paketobuildpacks" | awk ''{print $2}'' | xargs -r docker rmi',
+        ]
+      - ["sh", "-lc", "docker rmi -f $(docker images kindest/node -q) || true"]
+      - ["sh", "-lc", "docker rmi -f $(docker images registry -q) || true"]
 
   - name: Clear local terraform state files (truncate)
     cwd: "${SHOPIZER_DIR}"
     run:
-      - ["sh","-lc",": > terraform.tfstate; : > terraform.tfstate.backup"]
+      - ["sh", "-lc", ": > terraform.tfstate; : > terraform.tfstate.backup"]
 
   - name: Remove .terraform and tfstate files (shopizer-local)
     cwd: "${SHOPIZER_DIR}"
     run:
       - ["rm", "-rf", ".terraform"]
-      - ["rm", "-f", "terraform.tfstate", "terraform.tfstate.backup", "terraform.tfstate.d"]
+      - [
+          "rm",
+          "-f",
+          "terraform.tfstate",
+          "terraform.tfstate.backup",
+          "terraform.tfstate.d",
+        ]
 
   - name: Remove .terraform and tfstate files (keycloak)
     cwd: "${KEYCLOAK_DIR}"
     run:
       - ["rm", "-rf", ".terraform"]
-      - ["rm", "-f", "terraform.tfstate", "terraform.tfstate.backup", "terraform.tfstate.d"]
+      - [
+          "rm",
+          "-f",
+          "terraform.tfstate",
+          "terraform.tfstate.backup",
+          "terraform.tfstate.d",
+        ]
 
   - name: Clear persisted postgres host data (if exists)
     run:
-      - ["sh", "-lc", "if [ -d \"${POSTGRES_DATA_DIR}\" ]; then rm -rf \"${POSTGRES_DATA_DIR}\"/* \"${POSTGRES_DATA_DIR}\"/.[!.]* \"${POSTGRES_DATA_DIR}\"/..?* 2>/dev/null || true; fi"]
+      - [
+          "sh",
+          "-lc",
+          'if [ -d "${POSTGRES_DATA_DIR}" ]; then rm -rf "${POSTGRES_DATA_DIR}"/* "${POSTGRES_DATA_DIR}"/.[!.]* "${POSTGRES_DATA_DIR}"/..?* 2>/dev/null || true; fi',
+        ]

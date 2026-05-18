@@ -8,17 +8,28 @@ import shlex
 import subprocess
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # --- Optional: talk to Ollama for failure summaries ---
 import requests
 
+load_dotenv()
 os.environ["TF_INPUT"] = "false"
-#OLLAMA is not required, not tested, future plan
+# OLLAMA is not required, not tested, future plan
 OLLAMA_URL = "http://localhost:11434/api/chat"
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.1")
 
 # Allowlist binaries (tighten as you like)
 ALLOWED_CMDS = {
-    "docker", "kubectl", "terraform", "kind", "curl", "mkdir", "sh", "rm"
+    "docker",
+    "python3",
+    "kubectl",
+    "terraform",
+    "kind",
+    "curl",
+    "mkdir",
+    "sh",
+    "rm",
 }
 
 # Simple hard blocks
@@ -27,17 +38,21 @@ BLOCKED_SUBSTRINGS = ["mkfs", ":(){", "dd if="]
 
 VAR_PATTERN = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
+
 def expand_vars(obj, vars_map):
     if isinstance(obj, str):
+
         def repl(m):
             key = m.group(1)
             return str(vars_map.get(key, m.group(0)))
+
         return VAR_PATTERN.sub(repl, obj)
     if isinstance(obj, list):
         return [expand_vars(x, vars_map) for x in obj]
     if isinstance(obj, dict):
         return {k: expand_vars(v, vars_map) for k, v in obj.items()}
     return obj
+
 
 def _is_safe_rm(cmd_list, cwd):
     if cwd is None:
@@ -69,6 +84,7 @@ def _is_safe_rm(cmd_list, cwd):
 
 
 def ensure_safe_cmd(cmd_list, cwd=None):
+    print(cmd_list)
     if not cmd_list:
         raise ValueError("Empty command")
 
@@ -79,7 +95,9 @@ def ensure_safe_cmd(cmd_list, cwd=None):
     joined = " ".join(cmd_list)
     if exe == "rm":
         if not _is_safe_rm(cmd_list, cwd):
-            raise ValueError("Blocked rm: only .terraform and *tfstate* under cwd are allowed")
+            raise ValueError(
+                "Blocked rm: only .terraform and *tfstate* under cwd are allowed"
+            )
     for t in BLOCKED_TOKENS:
         if t == exe:
             raise ValueError(f"Blocked executable: {exe}")

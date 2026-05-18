@@ -21,9 +21,29 @@ variable "microservices" {
 
 variable "app_path" {
   description = "Relative path to the Maven parent project"
+  default     = "~/Desktop/playground/microservices"
 }
 
 variable "postgres_data_host_path" {
   description = "Host path on the Mac to store Postgres data for Kind (will be mounted into the node)"
   type        = string
+  default     = "/usr/local/opt/postgresql@15"
+}
+
+variable "enable_argocd" {
+  description = "Install Argo CD into the local Kind cluster"
+  type        = bool
+  default     = true
+}
+
+variable "argocd_namespace" {
+  description = "Namespace where Argo CD is installed"
+  type        = string
+  default     = "argocd"
+}
+
+variable "argocd_release_name" {
+  description = "Helm release name for Argo CD"
+  type        = string
+  default     = "argocd"
 }

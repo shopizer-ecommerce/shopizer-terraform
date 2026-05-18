@@ -1,0 +1,6 @@
+apiVersion: v2
+name: generic-java-service
+description: Generic Helm chart for Shopizer Java services
+type: application
+version: 0.1.0
+appVersion: "4.0.1.8"

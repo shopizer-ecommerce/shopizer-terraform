@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders
+  template:
+    metadata:
+      labels:
+        app: orders
+    spec:
+      initContainers:
+        - name: download-otel-agent
+          image: curlimages/curl:latest
+          command:
+            - sh
+            - -c
+            - |
+              curl -L -o /otel/opentelemetry-javaagent.jar \
+              https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.14.0/opentelemetry-javaagent.jar
+          volumeMounts:
+            - name: otel-agent
+              mountPath: /otel
+      containers:
+        - name: orders
+          image: localhost:5001/shopizer-orders:latest
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 250m
+            limits:
+              memory: 2Gi
+              cpu: 1000m
+          volumeMounts:
+            - name: otel-agent
+              mountPath: /otel
+          envFrom:
+            - configMapRef:
+                name: otel-common-env
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: >
+                -XX:+UseContainerSupport
+                -Xmx768m
+                -XX:MaxRAMPercentage=45.0
+                -javaagent:/otel/opentelemetry-javaagent.jar
+                -XX:MaxMetaspaceSize=256m
+            #                  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
+            - name: APPLICATION_DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_DB_HOST
+            - name: APPLICATION_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_DB_NAME
+            - name: APPLICATION_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_DB_USER
+            - name: APPLICATION_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_DB_PASSWORD
+            - name: APPLICATION_ISSUER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_ISSUER_URL
+            - name: APPLICATION_SERVICE_ISSUER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_SERVICE_ISSUER_URL
+            - name: APPLICATION_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CLIENT_ID
+            - name: APPLICATION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CLIENT_SECRET
+            - name: APPLICATION_CRYPTO_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: APPLICATION_CRYPTO_KEY
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: OPENAI_API_KEY
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app']
+
+          ports:
+            - containerPort: 8080
+      #            - containerPort: 5007   # debug port
+      #          resources:
+      #            requests:
+      #              memory: "1Gi"
+      #              cpu: "500m"
+      #            limits:
+      #              memory: "2Gi"
+      #              cpu: "1"
+      volumes:
+        - name: otel-agent
+          emptyDir: {}
+

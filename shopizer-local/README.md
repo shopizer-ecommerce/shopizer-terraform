@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Docker Desktop (recent version)
+- Docker Desktop
 - Terraform
 - Kubectl
 - java 21
@@ -87,7 +87,7 @@ kubectl create -f k8s/ingress/ingress.yaml
 
 ## Change the secret to keycloak
 `
-kubectl apply -f k8s/app-secret.yaml
+kubectl apply -f k8s/apps/shared/app-secret.yaml
 `
 
 ## restart pods that are dependant to secrets
@@ -103,7 +103,7 @@ add your open api key to keys/__OPENAPI_KEY__
 
 `
 echo "open api key" > keys/__OPENAPI_KEY__
-sed "s|__API_KEY__|$(base64 -w0 ./k8s/__OPENAPI_KEY__)|g" k8s/app-secret.yaml | kubectl apply -f -
+sed "s|__API_KEY__|$(base64 -w0 ./k8s/__OPENAPI_KEY__)|g" k8s/apps/shared/app-secret.yaml | kubectl apply -f -
 `
 
 ## Remote Debug
@@ -125,7 +125,7 @@ kubectl port-forward deployment/users 5007:5007
 - install nginx ** ingress **
 
 `
-kubectl create -f k8s/ingress/ingress.yaml
+kubectl create -f k8s/platform/manifests/ingress/ingress.yaml
 `
 
 - configure keycloak

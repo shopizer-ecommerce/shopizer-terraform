@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-
 APP_PATH=$1
 shift
 SERVICES=("$@")
@@ -13,10 +12,10 @@ java_version_output=$(java -version 2>&1)
 
 echo "$java_version_output"
 
-JAVA_MAJOR_VERSION=$(java -XshowSettings:properties -version 2>&1 \
-  | grep 'java.specification.version' \
-  | awk '{print $NF}' \
-  | cut -d. -f1)
+JAVA_MAJOR_VERSION=$(java -XshowSettings:properties -version 2>&1 |
+  grep 'java.specification.version' |
+  awk '{print $NF}' |
+  cut -d. -f1)
 
 echo "Detected Java major version: $JAVA_MAJOR_VERSION"
 
@@ -29,23 +28,20 @@ else
 fi
 
 # Pin JAVA_HOME to 21 if available (macOS) so downstream tools don't drift
-if [[ -x /usr/libexec/java_home ]]; then
-  export JAVA_HOME=$(/usr/libexec/java_home -v 21)
-fi
-
+#if [[ -x /usr/libexec/java_home ]]; then
+#  export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+#fi
 
 REGISTRY="127.0.0.1:5001"
 
 echo "Detected project version: $POM_VERSION"
 
 cd "$APP_PATH"
- ./mvnw clean install -DskipTests
-
-
+./mvnw clean install -DskipTests
+echo $(pwd)
 #for service in "$@"; do
 for service in "${SERVICES[@]}"; do
   SERVICE_DIR="$APP_PATH/$service"
-
 
   echo "📁 Entering $SERVICE_DIR"
   cd "$SERVICE_DIR"
@@ -53,11 +49,14 @@ for service in "${SERVICES[@]}"; do
 
   echo "📁 version $POM_VERSION"
 
-
   echo "🔨 Building image for shopizer-$service"
   ./mvnw clean package -DskipTests -Pno-tests
-  ./mvnw spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=$REGISTRY/shopizer-$service:$POM_VERSION -Dspring-boot.build-image.verbose=true -Dspring-boot.build-image.environment=BP_JVM_VERSION=21 -Pno-tests
+  if [[ -f Dockerfile ]]; then
+    docker build -t $REGISTRY/shopizer-$service:$POM_VERSION .
+  else
+    ./mvnw spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=$REGISTRY/shopizer-$service:$POM_VERSION -Dspring-boot.build-image.verbose=true -Dspring-boot.build-image.environment=BP_JVM_VERSION=21 -Pno-tests
+  fi
   echo "📤 Pushing $REGISTRY/shopizer-$service:$POM_VERSION"
   docker push $REGISTRY/shopizer-$service:$POM_VERSION
-  cd - > /dev/null
+  cd - >/dev/null
 done
