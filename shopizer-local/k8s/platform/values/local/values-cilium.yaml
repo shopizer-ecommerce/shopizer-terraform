@@ -3126,8 +3126,10 @@ operator:
     useDigest: true
     pullPolicy: "IfNotPresent"
     suffix: ""
-  # -- Number of replicas to run for the cilium-operator deployment
-  replicas: 2
+  # -- Number of replicas to run for the cilium-operator deployment.
+  # Local kind has one node, so keep one operator replica. Multiple replicas
+  # request the same operator host ports and leave the extra pod Pending.
+  replicas: 1
   # -- The priority class to use for cilium-operator
   priorityClassName: ""
   # -- DNS policy for Cilium operator pods.

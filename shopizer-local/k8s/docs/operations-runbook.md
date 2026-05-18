@@ -108,6 +108,44 @@ kubectl get secret argocd-initial-admin-secret \
   -o jsonpath='{.data.password}' | base64 -d
 ```
 
+## Cilium
+
+Check the Argo CD application:
+
+```bash
+kubectl get application cilium -n argocd -o wide
+kubectl describe application cilium -n argocd
+```
+
+Check Cilium pods:
+
+```bash
+kubectl get pods -n kube-system -l k8s-app=cilium -o wide
+kubectl get pods -n kube-system -l io.cilium/app=operator -o wide
+kubectl describe pods -n kube-system -l io.cilium/app=operator
+```
+
+For the local single-node kind cluster, Cilium operator must run with one
+replica:
+
+```yaml
+operator:
+  replicas: 1
+```
+
+The upstream Cilium docs describe `operator.replicas` as the Helm setting for
+operator high availability. In this local cluster there is only one Kubernetes
+node, and the operator pods request host ports `9234` and `9963`. If
+`operator.replicas` is greater than `1`, the first operator pod starts and the
+extra operator pod stays `Pending` with a scheduler event like:
+
+```text
+0/1 nodes are available: 1 node(s) didn't have free ports for the requested pod ports
+```
+
+That pending extra replica can make Argo CD show Cilium as `Progressing` or
+`Degraded`, even though one operator pod is running.
+
 ## App Secret
 
 Shared app secret:
@@ -158,4 +196,3 @@ environment, run validation outside the sandbox:
 ```bash
 terraform -chdir=/Users/ioannislafiotis/Desktop/playground/shopizer-terraform/shopizer-local validate
 ```
-
