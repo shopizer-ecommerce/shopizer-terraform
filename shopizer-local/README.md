@@ -160,10 +160,9 @@ docker stop terraform-kind-control-plane
 docker rmi -f $(docker images kindest/node -q) || true
 docker rmi -f $(docker images registry -q) || true
 
-catch all
+catch all next 3 lines
 
 docker ps -aq | xargs -r docker rm -f
-
 docker builder prune -af
 docker image prune -af
 

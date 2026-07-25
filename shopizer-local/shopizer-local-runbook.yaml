@@ -1,5 +1,6 @@
 name: shopizer-local
 vars:
+  #Configure the path SHOPIZER_DIR and KEYCLOAK_DIR
   SHOPIZER_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform/shopizer-local
   KEYCLOAK_DIR: /Users/carlsamson/Documents/dev/workspace/shopizer-terraform//shopizer-local/keycloak
   NAMESPACE: default
